@@ -1,0 +1,16 @@
+[Unit]
+Description=Abol Store gunicorn daemon
+After=network.target
+
+[Service]
+User=abolstore
+Group=www-data
+WorkingDirectory=/var/www/abolstore
+ExecStart=/var/www/abolstore/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/abolstore.sock \
+          config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

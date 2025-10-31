@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+
+{% block title %}پرداخت سفارش - آبول استور{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold text-navy-700 mb-6">پرداخت سفارش</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-navy-700 mb-4">اطلاعات سفارش</h2>
+            
+            <div class="mb-4">
+                <p class="text-gray-700"><span class="font-medium">محصول:</span> {{ order.product.name }}</p>
+                <p class="text-gray-700"><span class="font-medium">تعداد:</span> {{ order.quantity }}</p>
+                <p class="text-gray-700"><span class="font-medium">قیمت کل:</span> {{ order.total_price|floatformat:0|intcomma }} تومان</p>
+            </div>
+            
+            <div class="bg-orange-100 border-l-4 border-orange-500 p-4 mb-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-orange-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-orange-700">
+                            لطفا مبلغ {{ order.total_price|floatformat:0|intcomma }} تومان را به شماره کارت زیر واریز کنید و سپس رسید پرداخت را آپلود نمایید.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-100 p-4 rounded-md mb-6">
+                <p class="text-center font-bold text-lg mb-2">{{ card_number }}</p>
+                <p class="text-center text-gray-700">به نام {{ card_owner }}</p>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-navy-700 mb-4">آپلود رسید پرداخت</h2>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-6">
+                    {{ form.receipt|as_crispy_field }}
+                    <p class="text-sm text-gray-500 mt-1">فرمت‌های مجاز: JPG، PNG، PDF (حداکثر 5 مگابایت)</p>
+                </div>
+                
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-md transition-colors duration-300">
+                    ثبت پرداخت
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

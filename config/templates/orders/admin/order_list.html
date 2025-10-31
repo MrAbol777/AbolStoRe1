@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}مدیریت سفارشات - آبول استور{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-navy-700">مدیریت سفارشات</h1>
+        <a href="{% url 'orders:export_orders_csv' %}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300">
+            خروجی CSV
+        </a>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'orders:admin_order_list' %}" class="px-4 py-2 rounded-md {% if not current_status %}bg-orange-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                همه
+            </a>
+            <a href="{% url 'orders:admin_order_list' %}?status=pending" class="px-4 py-2 rounded-md {% if current_status == 'pending' %}bg-orange-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                در انتظار پرداخت
+            </a>
+            <a href="{% url 'orders:admin_order_list' %}?status=waiting" class="px-4 py-2 rounded-md {% if current_status == 'waiting' %}bg-orange-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                در انتظار پرداخت
+            </a>
+            <a href="{% url 'orders:admin_order_list' %}?status=confirmed" class="px-4 py-2 rounded-md {% if current_status == 'confirmed' %}bg-orange-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                در انتظار تأیید
+            </a>
+            <a href="{% url 'orders:admin_order_list' %}?status=rejected" class="px-4 py-2 rounded-md {% if current_status == 'rejected' %}bg-orange-500 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+                رد شده
+            </a>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">شناسه</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">کاربر</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">محصول</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">قیمت</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">وضعیت</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاریخ</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عملیات</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for order in orders %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ order.id }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ order.user.phone_number }}</div>
+                        <div class="text-sm text-gray-500">تلگرام: {{ order.user.telegram_id }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ order.product.name }}</div>
+                        <div class="text-sm text-gray-500">تعداد: {{ order.quantity }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ order.total_price|floatformat:0|intcomma }} تومان
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif order.status == 'waiting' %}bg-blue-100 text-blue-800
+                             {% elif order.status == 'confirmed' %}bg-green-100 text-green-800
+                            {% elif order.status == 'rejected' %}bg-red-100 text-red-800
+                            {% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ order.created_at|date:"Y/m/d H:i" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{% url 'orders:admin_order_detail' order.id %}" class="text-orange-600 hover:text-orange-800">مشاهده</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                        سفارشی یافت نشد.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

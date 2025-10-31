@@ -1,0 +1,44 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if order %}
+        ویرایش سفارش: {{ order.id }}
+    {% else %}
+        افزودن سفارش جدید
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if order %}
+                            <i class="fas fa-edit"></i> ویرایش سفارش: {{ order.id }}
+                        {% else %}
+                            <i class="fas fa-plus-circle"></i> افزودن سفارش جدید
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> ذخیره تغییرات
+                            </button>
+                            <a href="{% url 'admin_panel:orders_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times-circle"></i> انصراف
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

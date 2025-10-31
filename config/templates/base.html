@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Abol Store - فروشگاه کمبوهای گیمینگ{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col dark:bg-glossy-black dark:text-gray-100 font-iran-yekan relative overflow-x-hidden">
+    <div class="background-depth-effect"></div>
+    <!-- هدر -->
+    <header
+      class="sticky top-0 z-50 w-full border-b border-white border-opacity-10 bg-white bg-opacity-5 py-4 shadow-lg backdrop-blur-md liquid-glass-effect rounded-3xl"
+    >
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="{% url 'home' %}" class="relative z-10 h-8 w-auto filter drop-shadow-lg transition-all duration-300 ease-in-out hover:drop-shadow-2xl hover:drop-shadow-accent-orange/50 shadow-orange-glow">
+                    <img src="{% static 'images/logo.svg' %}" alt="Abol Store Logo" class="h-full w-auto">
+                </a>
+                <nav class="hidden md:flex space-x-4 space-x-reverse">
+                    <a href="{% url 'home' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                        <span class="relative z-10">خانه</span>
+                        <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                    </a>
+                    <a href="{% url 'home' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                        <span class="relative z-10">محصولات</span>
+                        <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                    </a>
+                    <a href="{% url 'accounts:contact' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                        <span class="relative z-10">تماس</span>
+                        <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'orders:order_list' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                            <span class="relative z-10">سفارشات</span>
+                            <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                        </a>
+                        {% if user.is_staff or user.is_superuser %}
+                            <a href="{% url 'admin_panel:dashboard' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                                <span class="relative z-10">پنل ادمین</span>
+                                <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                            </a>
+                            <a href="{% url 'admin_panel:admin_logout' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                                <span class="relative z-10">خروج ادمین</span>
+                                <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:logout' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                                <span class="relative z-10">خروج</span>
+                                <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                            <span class="relative z-10">ورود</span>
+                            <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="relative group overflow-hidden px-3 py-2 hover:text-accent-orange transition">
+                            <span class="relative z-10">ثبت‌نام</span>
+                            <span class="group-hover:before:content-[''] group-hover:before:absolute group-hover:before:inset-0 group-hover:before:bg-accent-orange/20 group-hover:before:blur-md group-hover:before:opacity-70 group-hover:before:transition-all group-hover:before:duration-300 group-hover:before:ease-in-out group-hover:before:z-0"></span>
+                        </a>
+                    {% endif %}
+                </nav>
+                <!-- منوی موبایل -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-white focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <!-- منوی موبایل با اسلاید -->
+            <div id="mobile-menu" class="md:hidden fixed top-0 right-0 h-full w-64 bg-secondary shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+                <div class="px-4 py-3 flex justify-between items-center border-b border-white/10">
+                    <span class="text-lg font-semibold">منو</span>
+                    <button id="mobile-menu-close" class="text-white focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="mt-2 py-2">
+                    <a href="{% url 'home' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">خانه</a>
+                    <a href="{% url 'home' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">محصولات</a>
+                    <a href="{% url 'accounts:contact' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">تماس</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'orders:order_list' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">سفارشات</a>
+                        {% if user.is_staff or user.is_superuser %}
+                            <a href="{% url 'admin_panel:dashboard' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">پنل ادمین</a>
+                            <a href="{% url 'admin_panel:admin_logout' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">خروج ادمین</a>
+                        {% else %}
+                            <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">خروج</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">ورود</a>
+                        <a href="{% url 'accounts:register' %}" class="block px-4 py-2 hover:bg-secondary/50 transition">ثبت‌نام</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- پیام‌ها -->
+    {% if messages %}
+    <div class="container mx-auto px-4 py-2">
+        {% for message in messages %}
+        <div class="p-4 mb-4 rounded-md {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- محتوای اصلی -->
+    <main class="container mx-auto px-4 py-6 flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- فوتر -->
+    <footer class="bg-secondary text-white py-6 liquid-glass-effect shadow-orange-glow">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-light text-primary mb-2">Abol Store</h3>
+                    <p class="text-sm">فروشگاه تخصصی کمبوهای گیمینگ</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">تماس با ما</h4>
+                    <p class="text-sm">آیدی تلگرام: @AbolStore</p>
+                </div>
+            </div>
+            <div class="mt-6 text-center text-sm">
+                <p>© تمامی حقوق برای Abol Store محفوظ است.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // منوی موبایل با اسلاید
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        function openMenu() {
+            mobileMenu.classList.remove('translate-x-full');
+        }
+        function closeMenu() {
+            mobileMenu.classList.add('translate-x-full');
+        }
+        mobileMenuButton.addEventListener('click', openMenu);
+        mobileMenuClose.addEventListener('click', closeMenu);
+        // بستن منو با کلیک بیرون از آن
+        document.addEventListener('click', (e) => {
+            if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                closeMenu();
+            }
+        });
+    </script>
+    {% block extra_js %}
+    {% endblock %}
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+    <script src="{% static 'js/animations.js' %}"></script>
+</body>
+</html>

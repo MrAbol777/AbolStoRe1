@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}ایجاد سفارش - Abol Store{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-secondary mb-6">ایجاد سفارش جدید</h1>
+        
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label for="{{ form.product.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    محصول
+                </label>
+                {{ form.product }}
+                {% if form.product.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {{ form.product.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    تعداد
+                </label>
+                {{ form.quantity }}
+                {% if form.quantity.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {{ form.quantity.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <label for="{{ form.referral_code.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    کد معرف (اختیاری)
+                </label>
+                {{ form.referral_code }}
+                {% if form.referral_code.errors %}
+                    <div class="text-red-500 text-sm mt-1">
+                        {{ form.referral_code.errors }}
+                    </div>
+                {% endif %}
+                <p class="text-sm text-gray-500 mt-1">با وارد کردن کد معرف می‌توانید از 10٪ تخفیف بهره‌مند شوید</p>
+            </div>
+            
+            <div class="flex justify-between items-center pt-4">
+                <a href="{% url 'home' %}" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition">
+                    بازگشت
+                </a>
+                <button type="submit" class="bg-primary hover:bg-orange-600 text-white px-6 py-2 rounded-md transition">
+                    ایجاد سفارش
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

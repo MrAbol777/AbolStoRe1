@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}جزئیات سفارش - آبول استور{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="{% url 'orders:admin_order_list' %}" class="text-orange-500 hover:text-orange-700">
+            &larr; بازگشت به لیست سفارشات
+        </a>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-navy-700 mb-6">جزئیات سفارش #{{ order.id }}</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h2 class="text-lg font-semibold mb-3">اطلاعات سفارش</h2>
+                <div class="space-y-2">
+                    <p><span class="font-medium">محصول:</span> {{ order.product.name }}</p>
+                    <p><span class="font-medium">تعداد:</span> {{ order.quantity }}</p>
+                    <p><span class="font-medium">قیمت کل:</span> {{ order.total_price|floatformat:0|intcomma }} تومان</p>
+                    <p><span class="font-medium">وضعیت:</span> 
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif order.status == 'waiting' %}bg-blue-100 text-blue-800
+                            {% elif order.status == 'confirmed' %}bg-green-100 text-green-800
+                            {% elif order.status == 'rejected' %}bg-red-100 text-red-800
+                            {% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </p>
+                    <p><span class="font-medium">تاریخ ثبت:</span> {{ order.created_at|date:"Y/m/d H:i" }}</p>
+                    {% if order.referral_code %}
+                    <p><span class="font-medium">کد معرف:</span> {{ order.referral_code }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div>
+                <h2 class="text-lg font-semibold mb-3">اطلاعات خریدار</h2>
+                <div class="space-y-2">
+                    <p><span class="font-medium">نام کاربری:</span> {{ order.user.username }}</p>
+                    <p><span class="font-medium">شماره موبایل:</span> {{ order.user.phone_number }}</p>
+                    <p><span class="font-medium">آیدی تلگرام:</span> {{ order.user.telegram_id }}</p>
+                </div>
+            </div>
+        </div>
+        
+        {% if order.payment %}
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold mb-3">اطلاعات پرداخت</h2>
+            <div class="space-y-2">
+                <p><span class="font-medium">تاریخ پرداخت:</span> {{ order.payment.created_at|date:"Y/m/d H:i" }}</p>
+                <div class="mt-4">
+                    <p class="font-medium mb-2">تصویر رسید:</p>
+                    <a href="{{ order.payment.receipt.url }}" target="_blank" class="block">
+                        <img src="{{ order.payment.receipt.url }}" alt="رسید پرداخت" class="max-w-md rounded-lg border border-gray-200">
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if order.status == 'waiting' %}
+        <div class="mt-8 flex space-x-4 space-x-reverse">
+            <form method="post" action="{% url 'orders:admin_order_detail' order.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300">
+                    تأیید سفارش
+                </button>
+            </form>
+            
+            <form method="post" action="{% url 'orders:admin_order_detail' order.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-300">
+                    رد سفارش
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
