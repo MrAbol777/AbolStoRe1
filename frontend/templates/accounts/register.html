@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}ثبت‌نام - Abol Store{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('register-form');
+    const registerSubmit = document.getElementById('register-submit');
+    const registerSpinner = document.getElementById('register-spinner');
+    const registerErrors = document.getElementById('register-errors');
+    
+    // Form validation functions
+    function showError(messages) {
+        registerErrors.innerHTML = ''; // Clear previous errors
+        if (Array.isArray(messages)) {
+            messages.forEach(message => {
+                registerErrors.insertAdjacentHTML('beforeend', `<div>${message}</div>`);
+            });
+        } else {
+            registerErrors.insertAdjacentHTML('beforeend', `<div>${messages}</div>`);
+        }
+        registerErrors.classList.remove('hidden');
+        registerErrors.classList.add('animate-pulse');
+        setTimeout(() => {
+            registerErrors.classList.remove('animate-pulse');
+        }, 1000);
+    }
+    
+    function hideError() {
+        registerErrors.classList.add('hidden');
+    }
+    
+    function validatePhoneNumber(phone) {
+        const phoneRegex = /^09\d{9}$/;
+        return phoneRegex.test(phone);
+    }
+    
+    function validateUsername(username) {
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        return usernameRegex.test(username) && username.length >= 3;
+    }
+    
+    function validatePassword(password) {
+        return password.length >= 8;
+    }
+    
+    // Real-time validation
+    document.getElementById('id_phone_number').addEventListener('input', function() {
+        const phone = this.value;
+        if (phone && !validatePhoneNumber(phone)) {
+            this.classList.add('border-red-500');
+            this.classList.remove('border-green-500');
+        } else if (phone) {
+            this.classList.add('border-green-500');
+            this.classList.remove('border-red-500');
+        } else {
+            this.classList.remove('border-red-500', 'border-green-500');
+        }
+    });
+    
+    document.getElementById('id_username').addEventListener('input', function() {
+        const username = this.value;
+        if (username && !validateUsername(username)) {
+            this.classList.add('border-red-500');
+            this.classList.remove('border-green-500');
+        } else if (username) {
+            this.classList.add('border-green-500');
+            this.classList.remove('border-red-500');
+        } else {
+            this.classList.remove('border-red-500', 'border-green-500');
+        }
+    });
+    
+    document.getElementById('id_password1').addEventListener('input', function() {
+        const password = this.value;
+        if (password && !validatePassword(password)) {
+            this.classList.add('border-red-500');
+            this.classList.remove('border-green-500');
+        } else if (password) {
+            this.classList.add('border-green-500');
+            this.classList.remove('border-red-500');
+        } else {
+            this.classList.remove('border-red-500', 'border-green-500');
+        }
+    });
+    
+    document.getElementById('id_password2').addEventListener('input', function() {
+        const password1 = document.getElementById('id_password1').value;
+        const password2 = this.value;
+        if (password2 && password1 !== password2) {
+            this.classList.add('border-red-500');
+            this.classList.remove('border-green-500');
+        } else if (password2) {
+            this.classList.add('border-green-500');
+            this.classList.remove('border-red-500');
+        } else {
+            this.classList.remove('border-red-500', 'border-green-500');
+        }
+    });
+    
+    // Form submission
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideError();
+        
+        // Get form data
+        const formData = new FormData(registerForm);
+        const username = formData.get('username');
+        const phone = formData.get('phone_number');
+        const password1 = formData.get('password1');
+        const password2 = formData.get('password2');
+        const acceptedTerms = formData.get('accepted_terms');
+        
+        // Client-side validation
+        if (!username || !phone || !password1 || !password2 || !acceptedTerms) {
+            showError('لطفاً تمام فیلدهای الزامی را پر کنید و قوانین را بپذیرید');
+            return;
+        }
+        
+        if (!validateUsername(username)) {
+            showError('نام کاربری باید حداقل 3 کاراکتر باشد و فقط شامل حروف انگلیسی، اعداد و _');
+            return;
+        }
+        
+        if (!validatePhoneNumber(phone)) {
+            showError('شماره موبایل باید با 09 شروع شود و 11 رقم باشد');
+            return;
+        }
+        
+        if (!validatePassword(password1)) {
+            showError('رمز عبور باید حداقل 8 کاراکتر باشد');
+            return;
+        }
+        
+        if (password1 !== password2) {
+            showError('رمزهای عبور مطابقت ندارند');
+            return;
+        }
+        
+        // Show loading state
+        registerSubmit.disabled = true;
+        registerSpinner.classList.remove('hidden');
+        
+        // Submit form
+        fetch('{% url "accounts:register" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                registerSubmit.innerHTML = '<i class="fas fa-check"></i> ثبت‌نام موفق!';
+                registerSubmit.classList.remove('from-accent-orange', 'to-vibrant-orange');
+                registerSubmit.classList.add('bg-green-600', 'hover:bg-green-700');
+                
+                // Redirect after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = data.redirect || '{% url "store:home" %}';
+                }, 1500);
+            } else {
+                // Show error
+                const errorMessages = Array.isArray(data.message) ? data.message : [data.message];
+                showError(errorMessages || 'خطا در ثبت‌نام. لطفاً دوباره تلاش کنید.');
+                registerSubmit.disabled = false;
+                registerSpinner.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.');
+            registerSubmit.disabled = false;
+            registerSpinner.classList.add('hidden');
+        });
+    });
+});
+</script>
+
+<!-- Additional enhanced validation -->
+<script>
+// اعتبارسنجی سمت‌کلاینت برای ثبت‌نام
+const form = document.getElementById('register-form');
+const errorsBox = document.getElementById('register-errors');
+const submitBtn = document.getElementById('register-submit');
+const spinner = document.getElementById('register-spinner');
+
+function isValidIranPhone(phone) {
+    return /^0?9\d{9}$/.test(phone);
+}
+function isValidTelegramId(id) {
+    return /^@?[A-Za-z0-9_]{5,32}$/.test(id);
+}
+
+form.addEventListener('submit', function(e) {
+    errorsBox.innerHTML = '';
+    const usernameInput = form.querySelector('input[name="username"]');
+    const phoneInput = form.querySelector('input[name="phone_number"]');
+    const telegramInput = form.querySelector('input[name="telegram_id"]');
+    const password1Input = form.querySelector('input[name="password1"]');
+    const password2Input = form.querySelector('input[name="password2"]');
+    const acceptedTermsInput = form.querySelector('input[name="accepted_terms"]');
+    
+    let hasError = false;
+    if (usernameInput && usernameInput.value.trim().length === 0) {
+        errorsBox.insertAdjacentHTML('beforeend', '<div>نام کاربری را وارد کنید.</div>');
+        hasError = true;
+    }
+    if (phoneInput && phoneInput.value && !isValidIranPhone(phoneInput.value)) {
+        errorsBox.insertAdjacentHTML('beforeend', '<div>شماره موبایل نامعتبر است. مثال: 09123456789</div>');
+        hasError = true;
+    }
+    if (telegramInput && telegramInput.value && !isValidTelegramId(telegramInput.value)) {
+        errorsBox.insertAdjacentHTML('beforeend', '<div>آیدی تلگرام نامعتبر است. مثال: @test_user</div>');
+        hasError = true;
+    }
+    if (password1Input && password1Input.value.length < 8) {
+        errorsBox.insertAdjacentHTML('beforeend', '<div>رمز عبور باید حداقل ۸ کاراکتر باشد.</div>');
+        hasError = true;
+    }
+    if (password2Input && password1Input && password2Input.value !== password1Input.value) {
+        errorsBox.insertAdjacentHTML('beforeend', '<div>رمزهای عبور با هم برابر نیستند.</div>');
+        hasError = true;
+    }
+    if (acceptedTermsInput && !acceptedTermsInput.checked) {
+        errorsBox.insertAdjacentHTML('beforeend', '<div>لطفاً قوانین و مقررات را بپذیرید.</div>');
+        hasError = true;
+    }
+    
+    if (hasError) {
+        e.preventDefault();
+        return;
+    }
+    // نمایش اسپینر
+    spinner.classList.remove('hidden');
+    submitBtn.setAttribute('disabled', 'disabled');
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-white text-shadow-lg mb-2">ثبت‌نام در Abol Store</h1>
+            <p class="text-gray-300">برای شروع خرید، حساب کاربری بسازید</p>
+        </div>
+        
+        <div class="liquid-glass-nav rounded-2xl p-8 shadow-orange-glow">
+            <form id="register-form" method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Custom form rendering for better styling -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="id_username" class="block text-sm font-medium text-white mb-2">نام کاربری</label>
+                        <input type="text" name="username" id="id_username" 
+                               class="w-full px-4 py-3 bg-dark-navy bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-orange focus:border-transparent transition-all duration-200"
+                               placeholder="نام کاربری خود را انتخاب کنید" required>
+                    </div>
+                    
+                    <div>
+                        <label for="id_phone_number" class="block text-sm font-medium text-white mb-2">شماره موبایل</label>
+                        <input type="tel" name="phone_number" id="id_phone_number" 
+                               class="w-full px-4 py-3 bg-dark-navy bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-orange focus:border-transparent transition-all duration-200"
+                               placeholder="مثال: 09123456789" required>
+                    </div>
+                    
+                    <div>
+                        <label for="id_telegram_id" class="block text-sm font-medium text-white mb-2">آیدی تلگرام (اختیاری)</label>
+                        <input type="text" name="telegram_id" id="id_telegram_id" 
+                               class="w-full px-4 py-3 bg-dark-navy bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-orange focus:border-transparent transition-all duration-200"
+                               placeholder="مثال: @username">
+                    </div>
+                    
+                    <div>
+                        <label for="id_password1" class="block text-sm font-medium text-white mb-2">رمز عبور</label>
+                        <input type="password" name="password1" id="id_password1" 
+                               class="w-full px-4 py-3 bg-dark-navy bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-orange focus:border-transparent transition-all duration-200"
+                               placeholder="رمز عبور قوی انتخاب کنید" required>
+                    </div>
+                    
+                    <div>
+                        <label for="id_password2" class="block text-sm font-medium text-white mb-2">تکرار رمز عبور</label>
+                        <input type="password" name="password2" id="id_password2" 
+                               class="w-full px-4 py-3 bg-dark-navy bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-orange focus:border-transparent transition-all duration-200"
+                               placeholder="رمز عبور را دوباره وارد کنید" required>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" name="accepted_terms" id="id_accepted_terms" 
+                               class="w-4 h-4 text-accent-orange bg-gray-700 border-gray-600 rounded focus:ring-accent-orange focus:ring-2"
+                               required>
+                        <label for="id_accepted_terms" class="mr-2 text-sm text-white">
+                            <a href="#" class="text-accent-orange hover:text-vibrant-orange underline">قوانین و مقررات</a> را می‌پذیرم
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="register-errors" class="text-red-400 text-sm space-y-1 bg-red-900 bg-opacity-30 p-3 rounded-lg hidden"></div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <button id="register-submit" type="submit" 
+                            class="w-full sm:w-auto bg-gradient-to-r from-accent-orange to-vibrant-orange hover:from-orange-500 hover:to-orange-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-orange-light flex items-center justify-center gap-2">
+                        <span>ایجاد حساب کاربری</span>
+                        <span id="register-spinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    </button>
+                    <a href="{% url 'accounts:login' %}" 
+                       class="text-accent-orange hover:text-vibrant-orange font-medium transition-colors duration-200">
+                        قبلاً حساب دارید؟ وارد شوید
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Additional help and info -->
+        <div class="text-center space-y-2">
+            <p class="text-gray-400 text-sm">
+                با ثبت‌نام، شما با 
+                <a href="{% url 'store:home' %}" class="text-accent-orange hover:text-vibrant-orange transition-colors duration-200">
+                    قوانین و شرایط
+                </a>
+                ما موافقت می‌کنید
+            </p>
+            <p class="text-gray-400 text-sm">
+                <a href="{% url 'accounts:contact' %}" class="text-accent-orange hover:text-vibrant-orange transition-colors duration-200">
+                    نیاز به کمک دارید؟ با ما تماس بگیرید
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}سفارشات من - Abol Store{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold text-secondary mb-6">سفارشات من</h1>
+        
+        {% if orders %}
+            <div class="space-y-4">
+                {% for order in orders %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h3 class="font-semibold text-lg">{{ order.product.name }}</h3>
+                                <p class="text-gray-600">تعداد: {{ order.quantity }}</p>
+                                <p class="text-gray-600">قیمت کل: {{ order.total_price }} تومان</p>
+                            </div>
+                            <div class="text-left">
+                                <span class="px-2 py-1 rounded-full text-sm 
+                                    {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif order.status == 'waiting' %}bg-blue-100 text-blue-800
+                                    {% elif order.status == 'confirmed' %}bg-green-100 text-green-800
+                                    {% elif order.status == 'rejected' %}bg-red-100 text-red-800
+                                    {% elif order.status == 'delivered' %}bg-gray-100 text-gray-800
+                                    {% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                                <p class="text-sm text-gray-500 mt-1">{{ order.created_at|date:"Y/m/d H:i" }}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-4">
+                            <a href="{% url 'orders:order_detail' order.id %}" class="text-primary hover:text-orange-600 transition">
+                                مشاهده جزئیات
+                            </a>
+                            {% if order.status == 'pending' %}
+                                <a href="{% url 'orders:order_payment' order.id %}" class="bg-primary hover:bg-orange-600 text-white px-4 py-2 rounded-md transition">
+                                    پرداخت
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-8">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">هیچ سفارشی وجود ندارد</h3>
+                <p class="text-gray-500 mb-4">شما تاکنون سفارشی ثبت نکرده‌اید.</p>
+                <a href="{% url 'store:home' %}" class="bg-primary hover:bg-orange-600 text-white px-4 py-2 rounded-md transition">
+                    مشاهده محصولات
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

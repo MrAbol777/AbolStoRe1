@@ -1,0 +1,479 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - پنل ادمین{% endblock %}
+
+{% block content %}
+<!-- هدر حرفه‌ای -->
+<div class="content-header">
+    <div class="header-content">
+        <h1 class="header-title">
+            <i class="fas fa-edit"></i>
+            {{ title }}
+        </h1>
+        <nav class="header-breadcrumb">
+            <a href="{% url 'admin_panel:admin_dashboard' %}">داشبورد</a>
+            <i class="fas fa-chevron-left"></i>
+            <a href="{% url 'admin_panel:admin_orders_list' %}">مدیریت سفارشات</a>
+            <i class="fas fa-chevron-left"></i>
+            <span>{{ title }}</span>
+        </nav>
+    </div>
+</div>
+
+<!-- فرم ویرایش سفارش -->
+<div class="edit-order-container">
+    <div class="order-edit-card">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">
+                                    <i class="fas fa-info-circle"></i>
+                                    وضعیت سفارش:
+                                </label>
+                                <div class="select-wrapper">
+                                    {{ form.status }}
+                                    <i class="fas fa-chevron-down select-icon"></i>
+                                </div>
+                                {% if form.status.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.status.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.quantity.id_for_label }}" class="form-label">
+                                    <i class="fas fa-calculator"></i>
+                                    تعداد:
+                                </label>
+                                <div class="input-wrapper">
+                                    {{ form.quantity }}
+                                    <i class="fas fa-hashtag input-icon"></i>
+                                </div>
+                                {% if form.quantity.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.quantity.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="{{ form.total_price.id_for_label }}" class="form-label">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    قیمت کل (تومان):
+                                </label>
+                                <div class="input-wrapper">
+                                    {{ form.total_price }}
+                                    <i class="fas fa-toman input-icon">ت</i>
+                                </div>
+                                {% if form.total_price.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.total_price.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">
+                                    <i class="fas fa-credit-card"></i>
+                                    روش پرداخت:
+                                </label>
+                                <div class="select-wrapper">
+                                    {{ form.payment_method }}
+                                    <i class="fas fa-chevron-down select-icon"></i>
+                                </div>
+                                {% if form.payment_method.errors %}
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ form.payment_method.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                <i class="fas fa-sticky-note"></i>
+                                یادداشت‌ها:
+                            </label>
+                            <div class="textarea-wrapper">
+                                {{ form.notes }}
+                                <i class="fas fa-comment-dots textarea-icon"></i>
+                            </div>
+                            {% if form.notes.errors %}
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ form.notes.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="mb-3">اطلاعات سفارش فعلی:</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th>شماره سفارش:</th>
+                                            <td>#{{ order.id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>کاربر:</th>
+                                            <td>{{ order.user.get_full_name|default:order.user.username }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>محصول:</th>
+                                            <td>{{ order.product.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>تاریخ ایجاد:</th>
+                                            <td>{{ order.created_at|date:"Y/m/d H:i" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>وضعیت فعلی:</th>
+                                            <td>
+                                                <span class="badge badge-{{ order.get_status_display|lower }}">
+                                                    {{ order.get_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i>
+                                <span>ذخیره تغییرات</span>
+                            </button>
+                            <a href="{% url 'admin_panel:admin_orders_list' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>بازگشت به لیست</span>
+                            </a>
+                            <a href="{% url 'admin_panel:admin_order_detail' order.id %}" class="btn btn-info btn-lg">
+                                <i class="fas fa-eye"></i>
+                                <span>مشاهده جزئیات</span>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern gradient background matching other admin pages */
+    .edit-order-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .order-edit-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Professional header */
+    .content-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .header-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .header-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    /* Modern form styling */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-label i {
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+    
+    /* Enhanced input fields */
+    input[type="text"], input[type="number"], input[type="email"], 
+    input[type="tel"], select, textarea {
+        width: 100%;
+        padding: 1rem 3rem 1rem 1.5rem;
+        border: 2px solid #e1e8ed;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #ffffff;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .input-wrapper, .select-wrapper, .textarea-wrapper {
+        position: relative;
+    }
+    
+    .input-icon, .select-icon, .textarea-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #667eea;
+        font-size: 1.2rem;
+        pointer-events: none;
+    }
+    
+    .select-icon {
+        right: 1.5rem;
+    }
+    
+    .textarea-icon {
+        top: 1.5rem;
+        transform: none;
+    }
+    
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+        padding-right: 3.5rem;
+    }
+    
+    /* Enhanced select styling */
+    select {
+        appearance: none;
+        cursor: pointer;
+        padding-right: 3.5rem;
+    }
+    
+    select option {
+        padding: 0.5rem;
+    }
+    
+    /* Modern buttons */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-start;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e1e8ed;
+    }
+    
+    .btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-lg {
+        padding: 1.25rem 2.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #859596 0%, #6f7c7d 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(149, 165, 166, 0.4);
+    }
+    
+    .btn-info {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+    
+    .btn-info:hover {
+        background: linear-gradient(135deg, #2d8ac8 0%, #2471a3 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+    }
+    
+    /* Error messages */
+    .error-message {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    /* Breadcrumb styling */
+    .breadcrumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        margin-bottom: 0;
+    }
+    
+    .breadcrumb-item a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: white;
+    }
+    
+    .breadcrumb-item.active {
+        color: white;
+        font-weight: 600;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .edit-order-container {
+            padding: 1rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+        }
+    }
+    
+    /* Loading animation for buttons */
+    .btn.loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+    
+    .btn.loading::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin-left: -10px;
+        margin-top: -10px;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spinner 0.8s linear infinite;
+    }
+    
+    @keyframes spinner {
+        to { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Abol StoRe | خرید کمبو و اکانت کالاف دیوتی در یزد و ایران{% endblock %}
+{% block description %}Abol StoRe - بهترین فروشگاه آنلاین برای خرید کمبوهای گیمینگ و اکانت‌های کالاف دیوتی در یزد و سراسر ایران. خرید امن و سریع با پشتیبانی 24/7 و قیمت‌های استثنایی.{% endblock %}
+
+{% block content %}
+<section class="container mx-auto px-4 py-8" role="main">
+    <div class="relative text-center py-20 px-6">
+        <div class="relative z-10">
+            <h1 class="persian-store-title mb-6 animate-fade-in-up">
+                به ابول استور خوش آمدید
+            </h1>
+            <p class="persian-store-subtitle mb-8 leading-relaxed animate-fade-in-up" style="animation-delay: 0.2s;">
+                بهترین کمبوهای گیمینگ با تضمین اصالت
+            </p>
+            <div class="animate-fade-in-up" style="animation-delay: 0.4s;">
+                <span class="header-welcome-badge">
+                    <span class="header-emoji">🎮</span> فروشگاه تخصصی گیمینگ
+                </span>
+            </div>
+            <div class="header-delivery-info animate-fade-in-up" style="animation-delay: 0.6s;">
+                <div class="flex items-center justify-center space-x-2 space-x-reverse">
+                    <span class="header-emoji">🚚</span>
+                    <span>تحویل فوری - سابقه ی 6 ساله</span>
+                    <span class="header-emoji experience-emoji">✨</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی‌ها</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {% for category in categories %}
+            <a href="{% url 'store:product_list_by_category' category_slug=category.slug %}" class="block p-4 border border-gray-200 rounded-lg text-center hover:shadow-md transition-shadow duration-300">
+                <h3 class="text-lg font-semibold text-gray-700">{{ category.name }}</h3>
+            </a>
+        {% empty %}
+            <p class="col-span-full text-center text-gray-500">هیچ دسته‌بندی برای نمایش وجود ندارد.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

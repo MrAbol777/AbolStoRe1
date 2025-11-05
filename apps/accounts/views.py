@@ -9,10 +9,12 @@ from django.conf import settings
 from django.core.cache import cache
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils import timezone
+from django.http import JsonResponse
+from django.urls import reverse
 from .forms import CustomUserCreationForm, CustomAuthenticationForm
 from .forms import ContactForm
 
-def register(request):
+def register_view(request):
     """
     ثبت‌نام کاربر جدید
     """
@@ -23,9 +25,45 @@ def register(request):
                 user = form.save()
                 login(request, user)
                 messages.success(request, 'ثبت‌نام شما با موفقیت انجام شد.')
-                return redirect('home')
+                
+                # Handle AJAX request
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'ثبت‌نام با موفقیت انجام شد',
+                        'redirect': reverse('store:home')
+                    })
+                
+                return redirect('store:home')
+            else:
+                # Handle form errors
+                errors = []
+                for field, field_errors in form.errors.items():
+                    for error in field_errors:
+                        field_label = form.fields[field].label or field
+                        errors.append(f'{field_label}: {error}')
+                
+                # Handle AJAX request
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': errors
+                    })
+                
+                # Handle regular request
+                for error in errors:
+                    messages.error(request, error)
         except Exception as e:
-            messages.error(request, 'خطایی رخ داد. لطفاً دوباره تلاش کنید.')
+            error_msg = 'خطایی رخ داد. لطفاً دوباره تلاش کنید.'
+            
+            # Handle AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_msg
+                })
+            
+            messages.error(request, error_msg)
         
     else:
         form = CustomUserCreationForm()
@@ -44,7 +82,16 @@ def login_view(request):
         key = _throttle_key(request)
         attempts, expires = cache.get(key, (0, None)) or (0, None)
         if attempts >= 5:
-            messages.error(request, 'تلاش‌های ورود بیش از حد. لطفاً بعداً دوباره تلاش کنید.')
+            error_msg = 'تلاش‌های ورود بیش از حد. لطفاً بعداً دوباره تلاش کنید.'
+            
+            # Handle AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_msg
+                })
+            
+            messages.error(request, error_msg)
             form = CustomAuthenticationForm(request, data=request.POST)
             next_url = request.POST.get('next') or request.GET.get('next', '')
             return render(request, 'accounts/login.html', {'form': form, 'next': next_url})
@@ -56,7 +103,18 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, f'خوش آمدید {username}!')
+                success_msg = f'خوش آمدید {username}!'
+                
+                # Handle AJAX request
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': True,
+                        'message': success_msg,
+                        'redirect': reverse('store:home')
+                    })
+                
+                messages.success(request, success_msg)
+                
                 # احترام به پارامتر next با بررسی امن بودن URL
                 next_url = request.POST.get('next') or request.GET.get('next')
                 if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
@@ -65,9 +123,28 @@ def login_view(request):
             else:
                 # افزایش شمارنده تلاش‌ها در صورت شکست
                 cache.set(key, (attempts + 1, timezone.now()), timeout=600)
-                messages.error(request, 'نام کاربری یا رمز عبور اشتباه است.')
+                error_msg = 'نام کاربری یا رمز عبور اشتباه است.'
+                
+                # Handle AJAX request
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': error_msg
+                    })
+                
+                messages.error(request, error_msg)
         else:
             cache.set(key, (attempts + 1, timezone.now()), timeout=600)
+            error_msg = 'نام کاربری یا رمز عبور اشتباه است.'
+            
+            # Handle AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': error_msg
+                })
+            
+            messages.error(request, error_msg)
     else:
         form = CustomAuthenticationForm()
     # عبور دادن next به قالب برای درج ورودی مخفی
@@ -80,16 +157,16 @@ def logout_view(request):
     """
     logout(request)
     messages.success(request, 'با موفقیت خارج شدید.')
-    return redirect('home')
+    return redirect('store:home')
 
 @login_required
-def profile(request):
+def profile_view(request):
     """
     نمایش پروفایل کاربر
     """
     return render(request, 'accounts/profile.html')
 
-def contact(request):
+def contact_view(request):
     """
     صفحه تماس با ما: دریافت اطلاعات و ذخیره پیام کاربر
     """
@@ -97,8 +174,37 @@ def contact(request):
         form = ContactForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'پیام شما دریافت شد. به زودی پاسخ داده می‌شود.')
-            return redirect('home')
+            success_msg = 'پیام شما دریافت شد. به زودی پاسخ داده می‌شود.'
+            
+            # Handle AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': success_msg,
+                    'redirect': reverse('store:home')
+                })
+            
+            messages.success(request, success_msg)
+            return redirect('store:home')
+        else:
+            # Handle form errors
+            errors = []
+            for field, field_errors in form.errors.items():
+                for error in field_errors:
+                    field_label = form.fields[field].label or field
+                    errors.append(f'{field_label}: {error}')
+            
+            # Handle AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'خطا در ارسال پیام',
+                    'errors': errors
+                })
+            
+            # Handle regular request
+            for error in errors:
+                messages.error(request, error)
     else:
         form = ContactForm()
     return render(request, 'accounts/contact.html', {'form': form})

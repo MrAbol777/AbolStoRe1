@@ -32,8 +32,8 @@ def create_order(request):
                 
             order.save()
             
-            # ارسال اعلان به تلگرام
-            message = f"سفارش جدید:\nکاربر: {order.user.phone_number}\nمحصول: {product.name}\nتعداد: {order.quantity}\nقیمت کل: {order.total_price} تومان"
+            # ارسال اعلان به تلگرام (فقط برای سفارش‌ها)
+            message = f"📦 سفارش جدید ثبت شد!\n\n👤 مشتری: {order.user.phone_number}\n🛍️ محصول: {product.name}\n📊 تعداد: {order.quantity}\n💰 مبلغ کل: {order.total_price:,} تومان\n\n✅ لطفاً جهت بررسی به پنل ادمین مراجعه کنید."
             send_telegram_notification(message, chat_id=order.user.telegram_id, user=order.user, order=order)
             
             messages.success(request, "سفارش شما با موفقیت ثبت شد. لطفا پرداخت را انجام دهید.")
@@ -68,8 +68,8 @@ def order_payment(request, order_id):
             order.status = 'waiting'
             order.save()
             
-            # ارسال اعلان به تلگرام
-            message = f"رسید پرداخت آپلود شد:\nکاربر: {order.user.phone_number}\nمحصول: {order.product.name}\nمبلغ: {order.total_price} تومان"
+            # ارسال اعلان به تلگرام (فقط برای سفارش‌ها)
+            message = f"📄 رسید پرداخت آپلود شد!\n\n👤 مشتری: {order.user.phone_number}\n🛍️ محصول: {order.product.name}\n💰 مبلغ: {order.total_price:,} تومان\n\n⏳ لطفاً جهت بررسی و تایید به پنل ادمین مراجعه کنید."
             send_telegram_notification(message, chat_id=order.user.telegram_id, user=order.user, order=order)
             
             messages.success(request, "رسید پرداخت شما با موفقیت آپلود شد. منتظر تأیید ادمین باشید.")
@@ -103,7 +103,7 @@ def admin_order_list(request):
     """نمایش لیست سفارشات برای ادمین"""
     if not request.user.is_staff:
         messages.error(request, 'شما دسترسی به این بخش را ندارید.')
-        return redirect('home')
+        return redirect('store:home')
     
     # فیلتر بر اساس وضعیت
     status = request.GET.get('status', '')
@@ -119,7 +119,7 @@ def admin_order_detail(request, order_id):
     """نمایش جزئیات سفارش برای ادمین"""
     if not request.user.is_staff:
         messages.error(request, 'شما دسترسی به این بخش را ندارید.')
-        return redirect('home')
+        return redirect('store:home')
     
     order = get_object_or_404(Order, id=order_id)
     
@@ -144,8 +144,8 @@ def admin_order_detail(request, order_id):
                 product.stock -= order.quantity
                 product.save()
                 
-                # ارسال اعلان به تلگرام
-                message = f"سفارش تایید شد:\nکاربر: {order.user.phone_number}\nمحصول: {order.product.name}\nتعداد: {order.quantity}\nمبلغ: {order.total_price} تومان"
+                # ارسال اعلان به تلگرام (فقط برای سفارش‌ها)
+                message = f"✅ سفارش تایید شد!\n\n👤 مشتری: {order.user.phone_number}\n🛍️ محصول: {order.product.name}\n📊 تعداد: {order.quantity}\n💰 مبلغ: {order.total_price:,} تومان\n\n📦 سفارش آماده ارسال است."
                 send_telegram_notification(message, chat_id=order.user.telegram_id, user=order.user, order=order)
                 
                 messages.success(request, "سفارش با موفقیت تایید شد.")
@@ -165,8 +165,8 @@ def admin_order_detail(request, order_id):
                 payment.verified_at = timezone.now()
                 payment.save()
                 
-                # ارسال اعلان به تلگرام
-                message = f"سفارش رد شد:\nکاربر: {order.user.phone_number}\nمحصول: {order.product.name}\nدلیل: عدم تطابق اطلاعات پرداخت"
+                # ارسال اعلان به تلگرام (فقط برای سفارش‌ها)
+                message = f"❌ سفارش رد شد!\n\n👤 مشتری: {order.user.phone_number}\n🛍️ محصول: {order.product.name}\n💰 مبلغ: {order.total_price:,} تومان\n\n❗️ دلیل: عدم تطابق اطلاعات پرداخت یا رسید نامعتبر"
                 send_telegram_notification(message, chat_id=order.user.telegram_id, user=order.user, order=order)
                 
                 messages.success(request, "سفارش با موفقیت رد شد.")
@@ -180,7 +180,7 @@ def export_orders_csv(request):
     """خروجی CSV از سفارشات"""
     if not request.user.is_staff:
         messages.error(request, 'شما دسترسی به این بخش را ندارید.')
-        return redirect('home')
+        return redirect('store:home')
     
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = f'attachment; filename="orders-{datetime.now().strftime("%Y-%m-%d")}.csv"'

@@ -1,0 +1,606 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}جزئیات سفارش #{{ order.id }} - پنل ادمین{% endblock content %}
+
+{% block content %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding-left: 50px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* استایل‌های اضافی برای بهبود کنتراست و خوانایی */
+.timeline-content {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.timeline-title {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.timeline-text {
+    color: #495057;
+    margin-bottom: 0;
+}
+
+.timeline-note {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border-left: 3px solid #ffc107;
+}
+
+.card-body p {
+    color: #212529;
+}
+
+.card-body .text-secondary {
+    color: #6c757d !important;
+}
+
+.card-body .text-dark {
+    color: #343a40 !important;
+}
+
+/* بهبود خوانایی لینک‌ها */
+.card-body a {
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.card-body a:hover {
+    color: #003d82;
+    text-decoration: underline;
+}
+
+/* بهبود خوانایی متن در بج‌ها */
+.badge {
+    font-size: 0.9em;
+    padding: 5px 10px;
+    font-weight: 600;
+}
+
+/* بهبود خوانایی جدول */
+.table-hover tbody tr:hover {
+    background-color: #f1f3f4;
+}
+
+.table td, .table th {
+    color: #212529;
+    border-color: #dee2e6;
+}
+
+/* بهبود خوانایی فرم‌ها */
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    color: #495057;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    color: #212529;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card.shadow-sm {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.badge {
+    font-size: 0.9em;
+    padding: 5px 10px;
+}
+
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+.form-control, .form-control-file {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- هدر صفحه -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-dark mb-0">
+                    <i class="fas fa-shopping-cart text-primary"></i>
+                    جزئیات سفارش #{{ order.id }}
+                </h2>
+                <div>
+                    <a href="{% url 'admin_panel:admin_orders_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> بازگشت به لیست
+                    </a>
+                    <a href="{% url 'admin_panel:order_edit' order.id %}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> ویرایش سفارش
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- خلاصه سریع -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">وضعیت فعلی</h5>
+                    <h3 class="mb-0">
+                        <span class="badge badge-light">
+                            {{ order.get_status_display }}
+                        </span>
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">مبلغ سفارش</h5>
+                    <h3 class="mb-0">{{ order.total_price|floatformat:0 }} تومان</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">تاریخ ثبت</h5>
+                    <h6 class="mb-0">{{ order.created_at|date:"Y/m/d" }}</h6>
+                    <small>{{ order.created_at|time:"H:i" }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h5 class="card-title">تعداد سفارشات کاربر</h5>
+                    <h3 class="mb-0">{{ user_total_orders }}</h3>
+                    <small>{{ user_completed_orders }} تکمیل شده</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- اطلاعات کامل کاربر -->
+                        <div class="col-md-6">
+                            <div class="card border-primary shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-user-circle"></i>
+                                        اطلاعات مشتری
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p><strong>نام کاربری:</strong></p>
+                                            <p><strong>نام کامل:</strong></p>
+                                            <p><strong>شماره تلفن:</strong></p>
+                                            <p><strong>آیدی تلگرام:</strong></p>
+                                            <p><strong>تاریخ عضویت:</strong></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><a href="{% url 'admin_panel:user_detail' order.user.id %}" class="text-primary">{{ order.user.username }}</a></p>
+                                            <p>{% if order.user.get_full_name %}{{ order.user.get_full_name }}{% else %}<span class="text-secondary">ثبت نشده</span>{% endif %}</p>
+                                            <p><a href="tel:{{ order.user.phone_number }}" class="text-primary">{{ order.user.phone_number }}</a></p>
+                                            <p>{% if order.user.telegram_id %}<a href="https://t.me/{{ order.user.telegram_id }}" target="_blank" class="text-primary">@{{ order.user.telegram_id }}</a>{% else %}<span class="text-secondary">ثبت نشده</span>{% endif %}</p>
+                                            <p>{{ order.user.date_joined|date:"Y/m/d" }}</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h6>آمار مشتری:</h6>
+                                            <p><strong>کل سفارشات:</strong> {{ user_total_orders }} عدد</p>
+                                            <p><strong>سفارشات تکمیل شده:</strong> {{ user_completed_orders }} عدد</p>
+                                            <p><strong>کل خرید:</strong> {{ user_total_spent|floatformat:0 }} تومان</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- اطلاعات کامل سفارش -->
+                        <div class="col-md-6">
+                            <div class="card border-info shadow-sm">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-info-circle"></i>
+                                        اطلاعات سفارش
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <p><strong>شناسه سفارش:</strong></p>
+                                            <p><strong>تاریخ ثبت:</strong></p>
+                                            <p><strong>زمان ثبت:</strong></p>
+                                            <p><strong>وضعیت فعلی:</strong></p>
+                                            <p><strong>مبلغ کل:</strong></p>
+                                            <p><strong>تعداد:</strong></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><code>#{{ order.id }}</code></p>
+                                            <p>{{ order.created_at|date:"Y/m/d" }}</p>
+                                            <p>{{ order.created_at|time:"H:i" }}</p>
+                                            <p><span class="badge badge-{% if order.status == 'waiting' %}warning{% elif order.status == 'paid' %}info{% elif order.status == 'confirmed' %}primary{% elif order.status == 'sent' %}secondary{% elif order.status == 'delivered' %}success{% else %}danger{% endif %}">{{ order.get_status_display }}</span></p>
+                                            <p><strong class="text-success">{{ order.total_price|floatformat:0 }} تومان</strong></p>
+                                            <p>{{ order.quantity }} عدد</p>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h6>محاسبه قیمت:</h6>
+                                            <p><strong>قیمت واحد:</strong> {{ order.product.price|floatformat:0 }} تومان</p>
+                                            <p><strong>تعداد:</strong> {{ order.quantity }} عدد</p>
+                                            <p><strong>جمع کل:</strong> {{ order.total_price|floatformat:0 }} تومان</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- محصولات سفارش -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-secondary shadow-sm">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-box"></i>
+                                        محصولات سفارش
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th>نام محصول</th>
+                                                    <th>قیمت واحد</th>
+                                                    <th>تعداد</th>
+                                                    <th>قیمت کل</th>
+                                                    <th>عملیات</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <img src="{% if order.product.image %}{{ order.product.image.url }}{% else %}{% static 'images/no-image.png' %}{% endif %}" 
+                                                             alt="{{ order.product.name }}" 
+                                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" 
+                                                             class="mr-2">
+                                                        <strong>{{ order.product.name }}</strong>
+                                                    </td>
+                                                    <td>{{ order.product.price|floatformat:0 }} تومان</td>
+                                                    <td>
+                                                        <span class="badge badge-secondary">{{ order.quantity }} عدد</span>
+                                                    </td>
+                                                    <td><strong class="text-success">{{ order.total_price|floatformat:0 }} تومان</strong></td>
+                                                    <td>
+                                                        <a href="{% url 'admin_panel:admin_product_edit' order.product.id %}" 
+                                                           class="btn btn-sm btn-outline-primary" 
+                                                           title="مشاهده و ویرایش محصول">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- مدیریت رسید پرداخت -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-warning shadow-sm">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-receipt"></i>
+                                        رسید پرداخت
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if order.payment_receipt %}
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <div class="alert alert-info">
+                                                <h6>اطلاعات رسید:</h6>
+                                                <p><strong>تاریخ آپلود:</strong> {{ order.payment_receipt.uploaded_at|date:"Y/m/d" }} - {{ order.payment_receipt.uploaded_at|time:"H:i" }}</p>
+                                                <p><strong>وضعیت پرداخت:</strong> 
+                                                    {% if order.is_paid %}
+                                                        <span class="badge badge-success">
+                                                            <i class="fas fa-check-circle"></i> پرداخت شده
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge badge-warning">
+                                                            <i class="fas fa-clock"></i> در انتظار بررسی
+                                                        </span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            
+                                            {% if not order.is_paid %}
+                                            <form method="post" action="{% url 'admin_panel:confirm_payment' order.id %}" class="mt-3">
+                                                {% csrf_token %}
+                                                <div class="form-group">
+                                                    <label for="payment_note">یادداشت پرداخت:</label>
+                                                    <textarea name="payment_note" id="payment_note" class="form-control" rows="2" placeholder="در صورت نیاز توضیحاتی وارد کنید..."></textarea>
+                                                </div>
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="fas fa-check"></i> تایید پرداخت
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <img src="{{ order.payment_receipt.image.url }}" alt="رسید پرداخت" class="img-fluid rounded mb-2" style="max-height: 200px; cursor: pointer;" onclick="window.open('{{ order.payment_receipt.image.url }}', '_blank')">
+                                                    <p class="text-secondary">برای مشاهده کامل کلیک کنید</p>
+                                                    <a href="{{ order.payment_receipt.image.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-external-link-alt"></i> مشاهده تصویر کامل
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>هنوز رسیدی آپلود نشده است.</strong>
+                                        <p>مشتری هنوز رسید پرداخت را آپلود نکرده است.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تاریخچه وضعیت‌ها -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-secondary shadow-sm">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-history"></i>
+                                        تاریخچه وضعیت‌ها
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if order.status_history %}
+                                    <div class="timeline">
+                                        {% for status in order.status_history %}
+                                        <div class="timeline-item">
+                                            <div class="timeline-marker bg-{% if status.status == 'waiting' %}warning{% elif status.status == 'paid' %}info{% elif status.status == 'confirmed' %}primary{% elif status.status == 'sent' %}secondary{% elif status.status == 'delivered' %}success{% else %}danger{% endif %}">
+                                                <i class="fas fa-{% if status.status == 'waiting' %}clock{% elif status.status == 'paid' %}money-check{% elif status.status == 'confirmed' %}check{% elif status.status == 'sent' %}paper-plane{% elif status.status == 'delivered' %}truck{% else %}times{% endif %}"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h6 class="timeline-title">{{ status.get_status_display }}</h6>
+                                                <p class="timeline-text">
+                                                    <small class="text-secondary">
+                                                        <i class="fas fa-calendar"></i> {{ status.created_at|date:"Y/m/d" }}
+                                                        <i class="fas fa-clock mr-2"></i> {{ status.created_at|time:"H:i" }}
+                                                    </small>
+                                                </p>
+                                                {% if status.note %}
+                                                <div class="timeline-note">
+                                                    <small class="text-dark"><strong>یادداشت:</strong> {{ status.note }}</small>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        هنوز تاریخچه‌ای برای این سفارش ثبت نشده است.
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تغییر وضعیت سفارش -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-danger shadow-sm">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-exchange-alt"></i>
+                                        تغییر وضعیت سفارش
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="new_status">وضعیت جدید:</label>
+                                                    <select name="new_status" id="new_status" class="form-control">
+                                                        <option value="" disabled selected>انتخاب وضعیت جدید...</option>
+                                                        <option value="waiting" {% if order.status == 'waiting' %}disabled{% endif %}>در انتظار پرداخت</option>
+                                                        <option value="paid" {% if order.status == 'paid' %}disabled{% endif %}>پرداخت شده</option>
+                                                        <option value="confirmed" {% if order.status == 'confirmed' %}disabled{% endif %}>تایید شده</option>
+                                                        <option value="sent" {% if order.status == 'sent' %}disabled{% endif %}>ارسال شده</option>
+                                                        <option value="delivered" {% if order.status == 'delivered' %}disabled{% endif %}>تحویل داده شده</option>
+                                                        <option value="cancelled" {% if order.status == 'cancelled' %}disabled{% endif %}>لغو شده</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label for="status_note">یادداشت:</label>
+                                                    <textarea name="status_note" id="status_note" class="form-control" rows="2" placeholder="یادداشت برای تغییر وضعیت..."></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" name="change_status" class="btn btn-danger">
+                                            <i class="fas fa-save"></i> تغییر وضعیت
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ارسال پیام به کاربر -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-comment"></i>
+                                        ارسال پیام به کاربر
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="message">متن پیام:</label>
+                                            <textarea name="message" id="message" class="form-control" rows="3" placeholder="پیام خود را اینجا بنویسید..." required></textarea>
+                                        </div>
+                                        <button type="submit" name="send_message" class="btn btn-info">
+                                            <i class="fas fa-paper-plane"></i> ارسال پیام
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- دکمه بازگشت -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <a href="{% url 'admin_panel:admin_orders_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right"></i> بازگشت به لیست سفارشات
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// دیباگ برای اطمینان از بارگذاری صحیح
+console.log('Order detail page loaded');
+
+// تابع برای کپی کردن متن به کلیپبورد
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // نمایش پیام موفقیت
+        const toast = document.createElement('div');
+        toast.className = 'toast position-fixed';
+        toast.style.cssText = 'top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999;';
+        toast.innerHTML = '<div class="toast-body bg-success text-white">کپی شد!</div>';
+        document.body.appendChild(toast);
+        
+        $(toast).toast({ delay: 2000 }).toast('show');
+        
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 2500);
+    }).catch(function(err) {
+        console.error('خطا در کپی:', err);
+        alert('خطا در کپی کردن');
+    });
+}
+
+// اضافه کردن کلیک هندلر برای عناصر قابل کپی
+document.addEventListener('DOMContentLoaded', function() {
+    const copyableElements = document.querySelectorAll('.copyable');
+    copyableElements.forEach(element => {
+        element.addEventListener('click', function() {
+            const text = this.getAttribute('data-copy') || this.textContent.trim();
+            copyToClipboard(text);
+        });
+        
+        // اضافه کردن کursor pointer برای نشان دادن قابل کلیک بودن
+        element.style.cursor = 'pointer';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if title %}{{ title }} - {% endif %}پنل مدیریت - آبول استور{% endblock %}
+{% block admin_content %}
+<div class="container mt-4">
+    <!-- هدر پنل مدیریت -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="h3 mb-0">پنل مدیریت آبول استور</h1>
+                </div>
+                <div class="col-md-6 text-md-right">
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'store:home' %}" class="btn btn-outline-primary btn-sm admin-action-btn">
+                            <i class="fas fa-home"></i> بازگشت به سایت
+                        </a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger btn-sm admin-action-btn">
+                            <i class="fas fa-sign-out-alt"></i> خروج
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- منوی پیمایش پنل مدیریت -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <p>Is Staff: {{ request.user.is_staff }}</p>
+            <p>Is Superuser: {{ request.user.is_superuser }}</p>
+            <nav class="nav flex-column">
+                <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-item nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i> داشبورد
+                </a>
+                <a href="{% url 'admin_panel:admin_orders_list' %}" class="nav-item nav-link {% if 'order' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-shopping-cart"></i> مدیریت سفارشات
+                </a>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'admin_panel:admin_products_list' %}">
+                    <i class="fas fa-box"></i>
+                    <span>مدیریت محصولات</span>
+                  </a>
+                </li>
+                <a href="{% url 'admin_panel:admin_users_list' %}" class="nav-item nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users"></i> مدیریت کاربران
+                </a>
+                <a href="{% url 'admin_panel:admin_contact_messages' %}" class="nav-item nav-link {% if 'contact' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-envelope"></i> پیام‌های تماس
+                </a>
+                <a href="{% url 'admin_panel:admin_categories_list' %}" class="nav-item nav-link {% if 'category' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-tags"></i> مدیریت دسته بندی ها
+                </a>
+                <a href="{% url 'admin_panel:admin_settings' %}" class="nav-item nav-link {% if 'setting' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-cog"></i> تنظیمات
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- محتوای اصلی -->
+    <div class="card">
+        <div class="card-body">
+
+</div>
+{% endblock admin_content %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+<!-- افزودن Font Awesome برای آیکون‌ها -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --dark-bg: #1a1a2e;
+            --card-bg: rgba(255, 255, 255, 0.98);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            font-family: 'Vazirmatn', 'Arial', sans-serif;
+        }
+        
+        .card {
+            background: #2a2a3e; /* Darker background for better contrast */
+            color: white; /* White text for readability */
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+        }
+        
+        .card-header {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 25px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .nav-pills .nav-link {
+            color: #495057;
+            font-weight: 500;
+            padding: 15px 20px;
+            margin: 8px 15px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            background: transparent;
+        }
+        
+        .nav-pills .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: right 0.3s ease;
+            z-index: -1;
+        }
+        
+        .nav-pills .nav-link:hover {
+            color: white;
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-pills .nav-link:hover::before {
+            right: 0;
+        }
+        
+        .nav-pills .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .nav-pills .nav-link i {
+            margin-left: 10px;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-pills .nav-link:hover i {
+            transform: scale(1.2);
+        }
+        
+        .btn {
+            border-radius: 10px;
+            font-weight: 500;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: right 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            right: 100%;
+        }
+        
+        .btn-outline-primary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-outline-danger {
+            background: transparent;
+            color: #f5576c;
+            border: 2px solid #f5576c;
+        }
+        
+        .btn-outline-danger:hover {
+            background: var(--secondary-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.3);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .animated-icon:hover {
+            transform: scale(1.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .text-white {
+            color: #ffffff !important;
+        }
+        
+        .container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .card {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .nav-pills .nav-link {
+                margin: 5px 10px;
+                padding: 12px 15px;
+            }
+        }
+
+        .admin-action-btn {
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: red !important; /* Temporary for debugging */
+        }
+        
+        .admin-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-action-btn:focus,
+        .admin-action-btn:active {
+            outline: none;
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<!-- افزودن jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- افزودن Bootstrap JS -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script>
+// تابع کمکی برای نمایش پیام‌های موفقیت
+function showAdminSuccessMessage(message) {
+    const toast = $(`
+        <div class="toast" role="alert" style="position: fixed; top: 20px; left: 20px; z-index: 9999;">
+            <div class="toast-header">
+                <i class="fas fa-check-circle text-success"></i>
+                <strong class="mr-auto">موفق!</strong>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `);
+    $('body').append(toast);
+    toast.toast({delay: 3000});
+    toast.toast('show');
+    setTimeout(() => toast.remove(), 3500);
+}
+
+// تابع کمکی برای نمایش پیام‌های خطا
+function showAdminErrorMessage(message) {
+    const toast = $(`
+        <div class="toast" role="alert" style="position: fixed; top: 20px; left: 20px; z-index: 9999;">
+            <div class="toast-header">
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+                <strong class="mr-auto">خطا!</strong>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `);
+    $('body').append(toast);
+    toast.toast({delay: 3000});
+    toast.toast('show');
+    setTimeout(() => toast.remove(), 3500);
+}
+
+// انیمیشن برای کارت‌ها هنگام لود
+$(document).ready(function() {
+    $('.card').each(function(index) {
+        $(this).css('animation-delay', (index * 0.1) + 's');
+        $(this).addClass('animate__animated animate__fadeInUp');
+    });
+});
+</script>
+{% endblock %}

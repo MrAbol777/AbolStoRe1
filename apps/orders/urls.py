@@ -10,6 +10,7 @@ urlpatterns = [
     path('<int:order_id>/payment/', views.order_payment, name='order_payment'),
     path('<int:order_id>/', views.order_detail, name='order_detail'),
     path('', views.order_list, name='order_list'),
+    path('cart/', views.order_list, name='cart'),  # صفحه سبد خرید
     
     # مسیرهای ادمین
     path('admin/', views.admin_order_list, name='admin_order_list'),

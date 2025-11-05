@@ -8,14 +8,21 @@ from django.db.models import Sum, Count, Q, F
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import datetime, timedelta
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.views.decorators.csrf import csrf_exempt
+import os
+import json
 
 from apps.orders.models import Order, Payment
 from apps.accounts.models import User, ContactMessage
-from apps.store.models import Product
+from apps.store.models import Product, Category
 from apps.telegram_bot.utils import send_telegram_notification
 from dotenv import load_dotenv, set_key
-import os
-from apps.store.forms import ProductForm
+from apps.store.forms import ProductForm, CategoryForm
 from django.core.paginator import Paginator
 from apps.accounts.forms import UserEditForm
 from .forms import OrderEditForm
@@ -79,6 +86,11 @@ def admin_dashboard(request):
         total_sold=Sum('orders__quantity', filter=Q(orders__status='confirmed'))
     ).filter(total_sold__isnull=False).order_by('-total_sold')[:10]
     
+    # تنظیمات از فایل .env
+    card_number = os.getenv('CARD_NUMBER', '')
+    card_owner = os.getenv('CARD_OWNER', '')
+    telegram_admin_chat_id = os.getenv('TELEGRAM_ADMIN_CHAT_ID', '')
+    
     context = {
         'total_orders': total_orders,
         'total_users': total_users,
@@ -91,6 +103,9 @@ def admin_dashboard(request):
         'recent_orders': recent_orders,
         'daily_orders': daily_orders,
         'top_products': top_products,
+        'card_number': card_number,
+        'card_owner': card_owner,
+        'telegram_admin_chat_id': telegram_admin_chat_id,
         'title': 'داشبورد مدیریت',
     }
     return render(request, 'admin/dashboard.html', context)
@@ -121,7 +136,6 @@ def admin_users_list(request):
         'users': users,
         'search_query': search_query,
     }
-    
     return render(request, 'admin/users_list.html', context)
 
 
@@ -134,7 +148,7 @@ def admin_user_edit(request, user_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'کاربر با موفقیت به‌روزرسانی شد.')
-            return redirect('admin_panel:users_list')
+            return redirect('admin_panel:admin_users_list')
     else:
         form = UserEditForm(instance=user)
     return render(request, 'admin/user_edit.html', {'form': form, 'user': user, 'title': 'ویرایش کاربر'})
@@ -147,7 +161,7 @@ def admin_user_delete(request, user_id):
     if request.method == 'POST':
         user.delete()
         messages.success(request, 'کاربر با موفقیت حذف شد.')
-        return redirect('admin_panel:users_list')
+        return redirect('admin_panel:admin_users_list')
     return render(request, 'admin/user_confirm_delete.html', {'user': user, 'title': 'حذف کاربر'})
 
 
@@ -164,11 +178,13 @@ def admin_user_detail(request, user_id):
 
 @admin_required
 def admin_products_list(request):
+    print("admin_products_list function called")
     """لیست محصولات برای ادمین"""
     products_list = Product.objects.annotate(
         total_sold=Sum('orders__quantity', filter=Q(orders__status='confirmed')),
         total_revenue=Sum(F('orders__quantity') * F('price'), filter=Q(orders__status='confirmed'))
     ).order_by('-created_at')
+    print(f"Initial products_list count: {products_list.count()}")
 
     # جستجو
     search_query = request.GET.get('search', '')
@@ -177,10 +193,12 @@ def admin_products_list(request):
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query)
         )
+    print(f"Products_list count after search filter: {products_list.count()}")
 
     paginator = Paginator(products_list, 10)  # نمایش 10 محصول در هر صفحه
     page_number = request.GET.get('page')
     products = paginator.get_page(page_number)
+    print(f"Products count after pagination: {len(products)}")
 
     context = {
         'products': products,
@@ -191,13 +209,21 @@ def admin_products_list(request):
 
 @admin_required
 def admin_product_create(request):
+    print("admin_product_create function called")
+    print(f"Request method: {request.method}")
     """ایجاد محصول جدید"""
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
+        print("Before form.is_valid() check")
         if form.is_valid():
-            form.save()
+            print("form is valid, attempting to save product")
+            product = form.save()
+            print(f"Product saved with ID: {product.id}")
             messages.success(request, 'محصول با موفقیت ایجاد شد.')
-            return redirect('admin_panel:admin_products_list')
+            return redirect('admin_panel:admin_products_list') # Changed redirect to admin_panel:admin_products_list
+        else:
+            print("Form is not valid. Errors:", form.errors)
+            messages.error(request, 'خطا در ایجاد محصول. لطفا اطلاعات را بررسی کنید.')
     else:
         form = ProductForm()
     return render(request, 'admin/product_form.html', {'form': form, 'title': 'ایجاد محصول جدید'})
@@ -271,7 +297,7 @@ def admin_order_edit(request, order_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'سفارش با موفقیت به‌روزرسانی شد.')
-            return redirect('admin_panel:orders_list')
+            return redirect('admin_panel:admin_orders_list')
     else:
         form = OrderEditForm(instance=order)
     return render(request, 'admin/order_edit.html', {'form': form, 'order': order, 'title': 'ویرایش سفارش'})
@@ -284,20 +310,76 @@ def admin_order_delete(request, order_id):
     if request.method == 'POST':
         order.delete()
         messages.success(request, 'سفارش با موفقیت حذف شد.')
-        return redirect('admin_panel:orders_list')
+        return redirect('admin_panel:admin_orders_list')
     return render(request, 'admin/order_confirm_delete.html', {'order': order, 'title': 'حذف سفارش'})
 
 
 @admin_required
 def admin_order_detail(request, order_id):
-    """نمایش جزئیات سفارش"""
-    order = get_object_or_404(Order, id=order_id)
-    return render(request, 'admin/order_detail.html', {'order': order, 'title': 'جزئیات سفارش'})
+    """نمایش جزئیات سفارش با اطلاعات کامل"""
+    order = get_object_or_404(Order.objects.select_related('user', 'product'), id=order_id)
+    
+    # محاسبه اطلاعات آماری
+    user_orders = Order.objects.filter(user=order.user)
+    user_total_orders = user_orders.count()
+    user_completed_orders = user_orders.filter(status='delivered').count()
+    user_total_spent = user_orders.filter(status='delivered').aggregate(
+        total=Sum('total_price')
+    )['total'] or 0
+    
+    # تاریخچه وضعیت‌ها
+    status_history = []
+    if order.status != 'waiting':
+        status_history.append({
+            'status': 'waiting',
+            'display': 'در انتظار پرداخت',
+            'date': order.created_at,
+            'active': order.status == 'waiting'
+        })
+    if order.status in ['paid', 'confirmed', 'sent', 'delivered']:
+        if order.payment_receipt_uploaded_at:
+            status_history.append({
+                'status': 'paid',
+                'display': 'پرداخت شده',
+                'date': order.payment_receipt_uploaded_at,
+                'active': order.status == 'paid'
+            })
+    if order.status in ['confirmed', 'sent', 'delivered']:
+        status_history.append({
+            'status': 'confirmed',
+            'display': 'تأیید شده',
+            'date': order.updated_at,
+            'active': order.status == 'confirmed'
+        })
+    if order.status in ['sent', 'delivered']:
+        status_history.append({
+            'status': 'sent',
+            'display': 'ارسال شده',
+            'date': order.updated_at,
+            'active': order.status == 'sent'
+        })
+    if order.status == 'delivered':
+        status_history.append({
+            'status': 'delivered',
+            'display': 'تحویل داده شده',
+            'date': order.updated_at,
+            'active': order.status == 'delivered'
+        })
+
+    context = {
+        'order': order,
+        'title': f'جزئیات سفارش #{order.id}',
+        'user_total_orders': user_total_orders,
+        'user_completed_orders': user_completed_orders,
+        'user_total_spent': user_total_spent,
+        'status_history': status_history,
+    }
+    return render(request, 'admin/order_detail.html', context)
 
 
 def admin_login(request):
     if request.user.is_authenticated and request.user.is_staff:
-        return redirect('admin_panel:dashboard')
+        return redirect('admin_panel:admin_dashboard')
 
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
@@ -308,7 +390,7 @@ def admin_login(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, 'شما با موفقیت وارد شدید.')
-                return redirect('admin_panel:dashboard')
+                return redirect('admin_panel:admin_dashboard')
             else:
                 messages.error(request, 'نام کاربری یا رمز عبور اشتباه است.')
         else:
@@ -351,7 +433,7 @@ def admin_update_settings(request):
         set_key('.env', 'CARD_OWNER', card_owner)
 
         messages.success(request, 'تنظیمات با موفقیت ذخیره شد.')
-    return redirect('admin_panel:settings')
+    return redirect('admin_panel:admin_settings')
 
 
 @admin_required
@@ -369,5 +451,218 @@ def admin_contact_message_delete(request, message_id):
     if request.method == 'POST':
         message.delete()
         messages.success(request, 'پیام تماس با موفقیت حذف شد.')
-        return redirect('admin_panel:contact_messages')
+        return redirect('admin_panel:admin_contact_messages')
     return render(request, 'admin/contact_message_confirm_delete.html', {'message': message, 'title': 'حذف پیام تماس'})
+
+
+@admin_required
+def admin_order_detail_api(request, order_id):
+    """API برای دریافت اطلاعات کامل سفارش"""
+    try:
+        order = get_object_or_404(Order.objects.select_related('user', 'product'), id=order_id)
+        
+        # محاسبه اطلاعات آماری کاربر
+        user_orders = Order.objects.filter(user=order.user)
+        user_total_orders = user_orders.count()
+        user_completed_orders = user_orders.filter(status='delivered').count()
+        user_total_spent = user_orders.filter(status='delivered').aggregate(
+            total=Sum('total_price')
+        )['total'] or 0
+        
+        # ایجاد timeline وضعیت
+        status_timeline = []
+        if order.status != 'waiting':
+            status_timeline.append({
+                'status': 'waiting',
+                'title': 'در انتظار پرداخت',
+                'date': order.created_at.strftime('%Y/%m/%d - %H:%M'),
+                'description': 'سفارش ثبت شده و در انتظار پرداخت است'
+            })
+        
+        # وضعیت‌های بعدی رو اضافه کن
+        status_order = ['waiting', 'paid', 'confirmed', 'sent', 'delivered']
+        current_status_index = status_order.index(order.status) if order.status in status_order else -1
+        
+        for i, status in enumerate(status_order):
+            if i <= current_status_index and status != 'waiting':
+                status_timeline.append({
+                    'status': status,
+                    'title': order.get_status_display(),
+                    'date': order.updated_at.strftime('%Y/%m/%d - %H:%M'),
+                    'description': f'سفارش به وضعیت {order.get_status_display()} تغییر یافت'
+                })
+        
+        # اطلاعات سفارش - با ساختار مورد انتظار JavaScript
+        order_data = {
+            'id': order.id,
+            'created_at': order.created_at.strftime('%Y/%m/%d - %H:%M'),
+            'status': order.status,
+            'status_display': order.get_status_display(),
+            'status_key': order.status,
+            'total_price': f"{order.total_price:,} تومان",
+            'quantity': order.quantity,
+            'payment_method_display': 'کارت به کارت',  # یا از مدل بخون
+            'notes': order.notes if hasattr(order, 'notes') else '',
+            'user_phone': order.user.phone_number,
+            'user_name': order.user.get_full_name() or order.user.username,
+            'referral_code': order.referral_code or '',
+            'status_timeline': status_timeline,
+            'items': [{
+                'name': order.product.name,
+                'quantity': order.quantity,
+                'price': f"{order.product.price:,}"
+            }],
+            'payment_receipt': order.payment_receipt.url if order.payment_receipt else None,
+            'customer': {
+                'name': order.user.get_full_name() or order.user.username,
+                'phone': order.user.phone_number,
+                'email': order.user.email,
+                'total_orders': user_total_orders,
+                'completed_orders': user_completed_orders,
+                'total_spent': f"{user_total_spent:,} تومان"
+            },
+            'product': {
+                'name': order.product.name,
+                'price': f"{order.product.price:,} تومان",
+                'image': order.product.image.url if order.product.image else None,
+                'description': order.product.description[:100] + '...' if len(order.product.description) > 100 else order.product.description
+            },
+            'payment_receipt_info': {
+                'exists': bool(order.payment_receipt),
+                'url': order.payment_receipt.url if order.payment_receipt else None,
+                'uploaded_at': order.payment_receipt_uploaded_at.strftime('%Y/%m/%d - %H:%M') if order.payment_receipt_uploaded_at else None
+            }
+        }
+        
+        return JsonResponse({'success': True, 'order': order_data})
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@admin_required
+@require_POST
+def admin_approve_order(request, order_id):
+    """تأیید سفارش"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        message_text = request.POST.get('message', '')
+        
+        # تغییر وضعیت سفارش
+        order.status = 'confirmed'
+        order.save()
+        
+        # ارسال پیام به کاربر
+        if message_text:
+            # اینجا می‌توانید از سیستم پیام‌رسانی خود استفاده کنید
+            # برای حالا فقط لاگ می‌کنیم
+            print(f"پیام به کاربر {order.user.username}: {message_text}")
+        
+        # ارسال نوتیفیکیشن تلگرام
+        try:
+            telegram_message = f"""
+✅ سفارش شماره {order.id} تأیید شد!
+
+📋 جزئیات سفارش:
+• محصول: {order.product.name}
+• مبلغ: {order.total_price:,} تومان
+• تعداد: {order.quantity}
+
+💬 پیام ادمین: {message_text if message_text else 'سفارش شما تأیید شد. ممنون از خریدتون!'}
+            """
+            # ارسال به تلگرام (در صورت فعال بودن)
+            # send_telegram_notification(order.user.telegram_id, telegram_message)
+        except:
+            pass
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'سفارش با موفقیت تأیید شد.',
+            'new_status': 'confirmed',
+            'new_status_display': 'تأیید شده'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@admin_required
+@require_POST
+def admin_reject_order(request, order_id):
+    """رد سفارش"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        reason = request.POST.get('reason', '')
+        
+        # تغییر وضعیت سفارش
+        order.status = 'rejected'
+        order.save()
+        
+        # ارسال پیام به کاربر
+        if reason:
+            # اینجا می‌توانید از سیستم پیام‌رسانی خود استفاده کنید
+            print(f"پیام رد سفارش به کاربر {order.user.username}: {reason}")
+        
+        # ارسال نوتیفیکیشن تلگرام
+        try:
+            telegram_message = f"""
+❌ سفارش شماره {order.id} رد شد!
+
+📋 جزئیات سفارش:
+• محصول: {order.product.name}
+• مبلغ: {order.total_price:,} تومان
+
+💬 دلیل رد: {reason if reason else 'سفارش شما بررسی شد و متأسفانه قابل تأیید نمی‌باشد.'}
+
+📞 برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.
+            """
+            # send_telegram_notification(order.user.telegram_id, telegram_message)
+        except:
+            pass
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'سفارش با موفقیت رد شد.',
+            'new_status': 'rejected',
+            'new_status_display': 'رد شده'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@admin_required
+@require_POST
+def admin_send_order_message(request, order_id):
+    """ارسال پیام به خریدار"""
+    try:
+        order = get_object_or_404(Order, id=order_id)
+        message_text = request.POST.get('message', '')
+        
+        if not message_text:
+            return JsonResponse({'success': False, 'error': 'متن پیام نمی‌تواند خالی باشد.'})
+        
+        # اینجا می‌توانید از سیستم پیام‌رسانی خود استفاده کنید
+        print(f"پیام ارسال شده به کاربر {order.user.username}: {message_text}")
+        
+        # ارسال نوتیفیکیشن تلگرام
+        try:
+            telegram_message = f"""
+💬 پیام از ادمین:
+
+{message_text}
+
+📋 مربوط به سفارش شماره {order.id}
+🛍️ محصول: {order.product.name}
+            """
+            # send_telegram_notification(order.user.telegram_id, telegram_message)
+        except:
+            pass
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'پیام با موفقیت ارسال شد.'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

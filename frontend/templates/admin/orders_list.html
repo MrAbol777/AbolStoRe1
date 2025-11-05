@@ -1,0 +1,748 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block title %}مدیریت سفارشات - پنل ادمین{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">مدیریت سفارشات</h2>
+    
+    <!-- فیلترها -->
+    <div class="mb-4">
+        <form method="get" class="flex flex-wrap gap-4 items-center">
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">وضعیت:</label>
+                <select name="status" id="status" class="border border-gray-300 rounded-md px-3 py-2">
+                    <option value="">همه</option>
+                    <option value="waiting" {% if request.GET.status == 'waiting' %}selected{% endif %}>در انتظار تأیید</option>
+                    <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>تأیید شده</option>
+                    <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>رد شده</option>
+                    <option value="delivered" {% if request.GET.status == 'delivered' %}selected{% endif %}>تحویل داده شده</option>
+                </select>
+            </div>
+            <div>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">جستجو:</label>
+                <input type="text" name="search" id="search" value="{{ request.GET.search }}" placeholder="نام کاربر یا محصول" class="border border-gray-300 rounded-md px-3 py-2">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-search ml-1"></i>جستجو
+                </button>
+                {% if request.GET.status or request.GET.search %}
+                <a href="{% url 'admin_panel:admin_orders_list' %}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors mr-2">
+                    <i class="fas fa-times ml-1"></i>حذف فیلتر
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- جدول سفارشات -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">شناسه</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">کاربر</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">محصول</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">مبلغ</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">وضعیت</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاریخ</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عملیات</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for order in orders %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.id }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div class="copyable" onclick="copyToClipboard('{{ order.user.phone_number }}')" title="کلیک برای کپی">
+                            <i class="fas fa-copy"></i>
+                            {{ order.user.phone_number|default:"-" }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.product.name|truncatechars:30 }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.total_price|floatformat:0 }} تومان</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                            {% if order.status == 'waiting' %}bg-yellow-100 text-yellow-800
+                            {% elif order.status == 'confirmed' %}bg-blue-100 text-blue-800
+                            {% elif order.status == 'rejected' %}bg-red-100 text-red-800
+                            {% elif order.status == 'delivered' %}bg-green-100 text-green-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.created_at|date:"Y/m/d H:i" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex gap-2">
+                            <button type="button" class="btn btn-sm btn-info" onclick="showOrderDetail({{ order.id }})" data-toggle="modal" data-target="#orderDetailModal">
+                                <i class="fas fa-eye"></i>جزئیات
+                            </button>
+                            <a href="{% url 'admin_panel:admin_order_edit' order.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>ویرایش
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">هیچ سفارشی یافت نشد.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- صفحه‌بندی -->
+    {% if orders.has_other_pages %}
+    <div class="mt-4 flex justify-center">
+        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="صفحه‌بندی">
+            {% if orders.has_previous %}
+            <a href="?page={{ orders.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                قبلی
+            </a>
+            {% endif %}
+            
+            {% for num in orders.paginator.page_range %}
+            {% if orders.number == num %}
+            <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                {{ num }}
+            </span>
+            {% else %}
+            <a href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                {{ num }}
+            </a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if orders.has_next %}
+            <a href="?page={{ orders.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                بعدی
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal جزئیات سفارش -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" role="dialog" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-blue-600 text-white">
+                <h5 class="modal-title" id="orderDetailModalLabel">جزئیات سفارش</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- محتوا توسط JavaScript پر می‌شود -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal تأیید سفارش -->
+<div class="modal fade" id="orderConfirmModal" tabindex="-1" role="dialog" aria-labelledby="orderConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="orderConfirmModalLabel">تأیید سفارش</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>آیا از تأیید این سفارش اطمینان دارید؟</p>
+                <div class="form-group mt-3">
+                    <label for="confirmMessage">پیام برای خریدار (اختیاری):</label>
+                    <textarea id="confirmMessage" class="form-control" rows="3" placeholder="پیام خود را اینجا بنویسید..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-success" onclick="confirmOrder()">تأیید سفارش</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal رد سفارش -->
+<div class="modal fade" id="orderRejectModal" tabindex="-1" role="dialog" aria-labelledby="orderRejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="orderRejectModalLabel">رد سفارش</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>آیا از رد این سفارش اطمینان دارید؟</p>
+                <div class="form-group mt-3">
+                    <label for="rejectReason">دلیل رد سفارش:</label>
+                    <textarea id="rejectReason" class="form-control" rows="3" placeholder="دلیل رد سفارش را بنویسید..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-danger" onclick="rejectOrder()">رد سفارش</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ارسال پیام -->
+<div class="modal fade" id="sendMessageModal" tabindex="-1" role="dialog" aria-labelledby="sendMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="sendMessageModalLabel">ارسال پیام به خریدار</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="messageText">متن پیام:</label>
+                    <textarea id="messageText" class="form-control" rows="4" placeholder="متن پیام خود را اینجا بنویسید..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">انصراف</button>
+                <button type="button" class="btn btn-primary" onclick="sendMessage()">ارسال پیام</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+/* استایل‌های مدرن برای مدیریت سفارشات */
+.copyable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.copyable:hover {
+    background-color: #f8f9fa;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+.copyable i {
+    color: #6c757d;
+    margin-right: 5px;
+}
+
+.copyable:hover i {
+    color: #007bff;
+}
+
+/* استایل برای کارت‌ها در modal */
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* استایل برای جدول محصولات */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table td {
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* استایل برای دکمه‌ها */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* استایل برای modal */
+.modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+
+/* استایل برای وضعیت سفارش */
+.badge {
+    font-size: 0.85em;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* استایل responsive */
+@media (max-width: 768px) {
+    .modal-lg {
+        max-width: 95%;
+        margin: 10px auto;
+    }
+    
+    .table-responsive {
+        font-size: 0.9em;
+    }
+    
+    .btn-sm {
+        font-size: 0.8em;
+        padding: 4px 8px;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* انیمیشن برای toast پیام‌ها */
+.toast {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.toast-header {
+    border-radius: 8px 8px 0 0;
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+/* استایل برای loading spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+}
+
+/* استایل برای فرم‌ها */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* استایل برای لینک رسید پرداخت */
+.btn-outline-primary {
+    border: 2px solid #007bff;
+    background: transparent;
+    color: #007bff;
+}
+
+.btn-outline-primary:hover {
+    background: #007bff;
+    color: white;
+}
+
+/* استایل برای timeline وضعیت */
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #007bff, #28a745);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding-left: 50px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+let currentOrderId = null;
+
+function showOrderDetail(orderId) {
+    console.log('showOrderDetail called with orderId:', orderId);
+    currentOrderId = orderId;
+    
+    // نمایش لودینگ
+    $('#orderDetailContent').html('<div class="text-center p-4"><div class="spinner-border" role="status"><span class="sr-only">در حال بارگذاری...</span></div></div>');
+    $('#orderDetailModal').modal('show');
+    
+    $.ajax({
+        url: '/admin-panel/orders/api/' + orderId + '/',
+        type: 'GET',
+        success: function(data) {
+            console.log('AJAX success, data:', data);
+            displayOrderDetail(data);
+        },
+        error: function(xhr, status, error) {
+            console.log('AJAX error:', error);
+            $('#orderDetailContent').html('<div class="alert alert-danger">خطا در بارگذاری اطلاعات سفارش. لطفاً دوباره تلاش کنید.</div>');
+        }
+    });
+}
+
+function displayOrderDetail(data) {
+    console.log('displayOrderDetail called with data:', data);
+    
+    let statusTimeline = '';
+    let paymentReceiptHtml = '';
+    let actionButtonsHtml = '';
+    
+    // ایجاد timeline برای وضعیت سفارش
+    if (data.status_timeline && data.status_timeline.length > 0) {
+        statusTimeline = '<div class="card mb-3"><div class="card-header"><h6 class="mb-0">وضعیت سفارش</h6></div><div class="card-body"><div class="timeline">';
+        data.status_timeline.forEach(function(item, index) {
+            const icon = getStatusIcon(item.status);
+            statusTimeline += `
+                <div class="timeline-item">
+                    <div class="timeline-marker bg-${getStatusColor(item.status)}">
+                        <i class="${icon}"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6 class="mb-1">${item.title}</h6>
+                        <small class="text-muted">${item.date}</small>
+                        ${item.description ? '<p class="mb-0 small">' + item.description + '</p>' : ''}
+                    </div>
+                </div>
+            `;
+        });
+        statusTimeline += '</div></div></div>';
+    }
+    
+    // نمایش رسید پرداخت
+    if (data.payment_receipt) {
+        paymentReceiptHtml = `
+            <div class="col-md-6">
+                <strong>رسید پرداخت:</strong>
+                <a href="${data.payment_receipt}" target="_blank" class="btn btn-outline-primary btn-sm mr-2">
+                    <i class="fas fa-image"></i> مشاهده رسید
+                </a>
+            </div>
+        `;
+    }
+    
+    // ایجاد دکمه‌های عملیات
+    if (data.status === 'waiting') {
+        actionButtonsHtml = `
+            <div class="col-12">
+                <hr class="my-3">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-success" onclick="showConfirmModal()">
+                        <i class="fas fa-check"></i> تأیید سفارش
+                    </button>
+                    <button class="btn btn-danger" onclick="showRejectModal()">
+                        <i class="fas fa-times"></i> رد سفارش
+                    </button>
+                    <button class="btn btn-info" onclick="showMessageModal()">
+                        <i class="fas fa-envelope"></i> ارسال پیام
+                    </button>
+                </div>
+            </div>
+        `;
+    } else if (data.status === 'confirmed') {
+        actionButtonsHtml = `
+            <div class="col-12">
+                <hr class="my-3">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-primary" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i> ارسال به مشتری
+                    </button>
+                    <button class="btn btn-danger" onclick="showRejectModal()">
+                        <i class="fas fa-times"></i> رد سفارش
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    let itemsHtml = '';
+    if (data.items && data.items.length > 0) {
+        itemsHtml = data.items.map(item => `
+            <div class="flex justify-between py-2 border-b border-gray-200 dark:border-gray-700">
+                <span>${item.name}</span>
+                <span>${item.quantity} x ${item.price}</span>
+            </div>
+        `).join('');
+    } else {
+        itemsHtml = '<p>جزئیات محصول در دسترس نیست.</p>';
+    }
+    
+    const html = `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">اطلاعات سفارش</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>شماره سفارش:</strong> #${data.id}</p>
+                        <p><strong>تاریخ سفارش:</strong> ${data.created_at}</p>
+                        <p><strong>مبلغ کل:</strong> ${data.total_price}</p>
+                        <p><strong>وضعیت:</strong> <span class="badge badge-${getStatusColor(data.status)}">${data.status_display}</span></p>
+                        <p><strong>روش پرداخت:</strong> ${data.payment_method_display}</p>
+                        ${data.notes ? `<p><strong>توضیحات:</strong> ${data.notes}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">اطلاعات خریدار</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="copyable" onclick="copyToClipboard('${data.user_phone}')" title="کلیک برای کپی">
+                            <strong>شماره تماس:</strong> <i class="fas fa-copy"></i> ${data.user_phone}
+                        </p>
+                        <p><strong>نام کاربر:</strong> ${data.user_name}</p>
+                        ${data.referral_code ? `<p><strong>کد معرف:</strong> ${data.referral_code}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        ${statusTimeline}
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-white">
+                        <h6 class="mb-0">محصولات سفارش</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            ${data.items.map(item => `
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    ${item.name} (x${item.quantity})
+                                    <span class="badge badge-primary badge-pill">${item.price}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            ${paymentReceiptHtml}
+        </div>
+        
+        <div class="row mt-3">
+            ${actionButtonsHtml}
+        </div>
+    `;
+    
+    $('#orderDetailContent').html(html);
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'waiting': 'warning',
+        'paid': 'info',
+        'confirmed': 'primary',
+        'sent': 'secondary',
+        'delivered': 'success',
+        'cancelled': 'danger'
+    };
+    return colors[status] || 'secondary';
+}
+
+function getStatusIcon(status) {
+    const icons = {
+        'waiting': 'fas fa-clock',
+        'paid': 'fas fa-credit-card',
+        'confirmed': 'fas fa-check',
+        'sent': 'fas fa-shipping-fast',
+        'delivered': 'fas fa-box',
+        'cancelled': 'fas fa-times'
+    };
+    return icons[status] || 'fas fa-question';
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // نمایش پیام موفقیت
+        const toast = $(`
+            <div class="toast" role="alert" style="position: fixed; top: 20px; left: 20px; z-index: 9999;">
+                <div class="toast-header">
+                    <i class="fas fa-check text-success"></i>
+                    <strong class="mr-auto">کپی شد!</strong>
+                </div>
+                <div class="toast-body">
+                    ${text} در کلیپبورد کپی شد.
+                </div>
+            </div>
+        `);
+        $('body').append(toast);
+        toast.toast({delay: 2000});
+        toast.toast('show');
+        setTimeout(() => toast.remove(), 2500);
+    });
+}
+
+function showConfirmModal() {
+    $('#orderDetailModal').modal('hide');
+    $('#orderConfirmModal').modal('show');
+}
+
+function showRejectModal() {
+    $('#orderDetailModal').modal('hide');
+    $('#orderRejectModal').modal('show');
+}
+
+function showMessageModal() {
+    $('#orderDetailModal').modal('hide');
+    $('#sendMessageModal').modal('show');
+}
+
+function confirmOrder() {
+    const message = $('#confirmMessage').val();
+    
+    $.ajax({
+        url: `/admin/orders/${currentOrderId}/confirm/`,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        data: {
+            message: message
+        },
+        success: function(response) {
+            $('#orderConfirmModal').modal('hide');
+            showAdminSuccessMessage('سفارش با موفقیت تأیید شد.');
+            // رفرش لیست سفارشات
+            setTimeout(() => location.reload(), 1500);
+        },
+        error: function() {
+            showAdminErrorMessage('خطا در تأیید سفارش.');
+        }
+    });
+}
+
+function rejectOrder() {
+    const reason = $('#rejectReason').val();
+    
+    if (!reason.trim()) {
+        alert('لطفاً دلیل رد سفارش را وارد کنید.');
+        return;
+    }
+    
+    $.ajax({
+        url: `/admin/orders/${currentOrderId}/reject/`,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        data: {
+            reason: reason
+        },
+        success: function(response) {
+            $('#orderRejectModal').modal('hide');
+            showAdminSuccessMessage('سفارش با موفقیت رد شد.');
+            // رفرش لیست سفارشات
+            setTimeout(() => location.reload(), 1500);
+        },
+        error: function() {
+            showAdminErrorMessage('خطا در رد سفارش.');
+        }
+    });
+}
+
+function sendMessage() {
+    const message = $('#messageText').val();
+    
+    if (!message.trim()) {
+        alert('لطفاً متن پیام را وارد کنید.');
+        return;
+    }
+    
+    $.ajax({
+        url: `/admin/orders/${currentOrderId}/send-message/`,
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        data: {
+            message: message
+        },
+        success: function(response) {
+            $('#sendMessageModal').modal('hide');
+            showAdminSuccessMessage('پیام با موفقیت ارسال شد.');
+        },
+        error: function() {
+            showAdminErrorMessage('خطا در ارسال پیام.');
+        }
+    });
+}
+
+// باز کردن مجدد modal جزئیات بعد از بسته شدن modalهای فرعی
+$('#orderConfirmModal, #orderRejectModal, #sendMessageModal').on('hidden.bs.modal', function () {
+    $('#orderDetailModal').modal('show');
+});
+</script>
+{% endblock %}

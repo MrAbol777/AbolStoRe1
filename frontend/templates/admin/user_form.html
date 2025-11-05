@@ -1,0 +1,29 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if action == 'edit' %}ویرایش کاربر: {{ user_obj.username }}{% else %}ایجاد کاربر جدید{% endif %}
+{% endblock content %}
+
+{% block content %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">
+            {% if action == 'edit' %}ویرایش کاربر: {{ user_obj.username }}{% else %}ایجاد کاربر جدید{% endif %}
+        </h1>
+
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="flex justify-end space-x-4 mt-6">
+                    <button type="submit" class="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50">
+                        {% if action == 'edit' %}ذخیره تغییرات{% else %}ایجاد کاربر{% endif %}
+                    </button>
+                    <a href="{% url 'admin_panel:admin_users_list' %}" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50">
+                        لغو
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

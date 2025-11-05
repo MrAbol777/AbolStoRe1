@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}ورود - Abol Store{% endblock %}
+
+{% block extra_js %}
+<script>
+    const loginErrors = document.getElementById('login-errors'); // Define loginErrors globally
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('login-form');
+        const loginSubmit = document.getElementById('login-submit');
+        const loginSpinner = document.getElementById('login-spinner');
+        // const loginErrors = document.getElementById('login-errors'); // Removed duplicate definition
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordField = document.getElementById('id_password');
+        // const errorsBox = document.getElementById('login-errors'); // Removed duplicate definition
+        const spinner = document.getElementById('login-spinner');
+        
+        // Toggle password visibility
+        togglePassword.addEventListener('click', function() {
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                passwordField.type = 'password';
+                this.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        });
+        
+        // Form validation functions
+        function showError(message) {
+            loginErrors.textContent = message;
+            loginErrors.classList.remove('hidden');
+            loginErrors.classList.add('animate-pulse');
+            setTimeout(() => {
+                loginErrors.classList.remove('animate-pulse');
+            }, 1000);
+        }
+        
+        function hideError() {
+            loginErrors.classList.add('hidden');
+        }
+        
+        // Real-time validation
+        document.getElementById('id_username').addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.add('border-green-500');
+                this.classList.remove('border-red-500');
+            } else {
+                this.classList.remove('border-green-500', 'border-red-500');
+            }
+        });
+        
+        passwordField.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.add('border-green-500');
+                this.classList.remove('border-red-500');
+            } else {
+                this.classList.remove('border-green-500', 'border-red-500');
+            }
+        });
+        
+        // Form submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            hideError();
+            
+            // Get form data
+            const formData = new FormData(loginForm);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            
+            // Client-side validation
+            if (!username || !password) {
+                showError('لطفاً نام کاربری و رمز عبور را وارد کنید');
+                return;
+            }
+            
+            // Show loading state
+            loginSubmit.disabled = true;
+            loginSpinner.classList.remove('hidden');
+            
+            // Submit form
+            fetch('{% url "accounts:login" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    loginSubmit.innerHTML = '<i class="fas fa-check"></i> ورود موفق!';
+                    loginSubmit.classList.remove('from-accent-orange', 'to-vibrant-orange');
+                    loginSubmit.classList.add('bg-green-600', 'hover:bg-green-700');
+                    
+                    // Redirect after 1.5 seconds
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '{% url "store:home" %}';
+                    }, 1500);
+                } else {
+                    // Show error
+                    showError(data.message || 'خطا در ورود. لطفاً دوباره تلاش کنید.');
+                    loginSubmit.disabled = false;
+                    loginSpinner.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.');
+                loginSubmit.disabled = false;
+                loginSpinner.classList.add('hidden');
+            });
+        });
+    });
+
+    // Enhanced login validation and error handling - use existing variables
+    
+    // Get form elements
+    const loginForm = document.getElementById('login-form');
+    const loginSubmit = document.getElementById('login-submit');
+    const loginSpinner = document.getElementById('login-spinner');
+    const spinner = loginSpinner; // Alias for backward compatibility
+    
+    function showError(message) {
+        loginErrors.innerHTML = `<div>${message}</div>`; // Changed errorsBox to loginErrors
+        loginErrors.classList.remove('hidden');
+        loginErrors.classList.add('animate-fade-in-up');
+    }
+    
+    function hideError() {
+        loginErrors.classList.add('hidden'); // Changed errorsBox to loginErrors
+        loginErrors.innerHTML = '';
+    }
+    
+    function validateForm() {
+        hideError();
+        const usernameInput = loginForm.querySelector('input[name="username"]');
+        const passwordInput = loginForm.querySelector('input[name="password"]');
+        let hasError = false;
+        
+        if (!usernameInput || usernameInput.value.trim().length === 0) {
+            showError('لطفاً نام کاربری خود را وارد کنید.');
+            usernameInput?.focus();
+            hasError = true;
+        } else if (!passwordInput || passwordInput.value.length === 0) {
+            showError('لطفاً رمز عبور خود را وارد کنید.');
+            passwordInput?.focus();
+            hasError = true;
+        } else if (passwordInput.value.length < 8) {
+            showError('رمز عبور باید حداقل ۸ کاراکتر باشد.');
+            passwordInput?.focus();
+            hasError = true;
+        }
+        
+        return !hasError;
+    }
+    
+    // Real-time validation
+    loginForm.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                this.classList.remove('border-red-500');
+                this.classList.add('border-green-500');
+            } else {
+                this.classList.remove('border-green-500');
+                this.classList.add('border-red-500');
+            }
+        });
+    });
+    
+    loginForm.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return;
+        }
+        
+        // Show loading state
+        spinner.classList.remove('hidden');
+        loginSubmit.setAttribute('disabled', 'disabled');
+        loginSubmit.classList.add('opacity-75', 'cursor-not-allowed');
+    });
+    
+    // Handle server-side errors
+    window.addEventListener('DOMContentLoaded', function() {
+        // Check for any server-side error messages
+        const serverErrors = document.querySelector('.alert-danger');
+        if (serverErrors) {
+            showError(serverErrors.textContent);
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="text-center">
+            <h1 class="text-3xl font-extrabold text-white text-shadow-lg mb-2">ورود به Abol Store</h1>
+            <p class="text-gray-300">برای ادامه خرید، وارد حساب خود شوید</p>
+        </div>
+        
+        <div class="liquid-glass-nav rounded-2xl p-8 shadow-orange-glow">
+            <form id="login-form" method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Custom form rendering for better styling -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="id_username" class="block text-sm font-medium text-white mb-2">نام کاربری</label>
+                        <input type="text" name="username" id="id_username" 
+                               class="w-full px-4 py-3 bg-dark-navy bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-orange focus:border-transparent transition-all duration-200"
+                               placeholder="نام کاربری خود را وارد کنید" required>
+                    </div>
+                    
+                    <div>
+                        <label for="id_password" class="block text-sm font-medium text-white mb-2">رمز عبور</label>
+                        <div class="relative">
+                            <input type="password" name="password" id="id_password" 
+                                   class="w-full px-4 py-3 bg-dark-navy bg-opacity-50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent-orange focus:border-transparent transition-all duration-200 pr-10"
+                                   placeholder="رمز عبور خود را وارد کنید" required>
+                            <button type="button" id="toggle-password" 
+                                    class="absolute inset-y-0 left-0 flex items-center px-3 text-gray-400 hover:text-white transition-colors duration-200">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+                
+                <div id="login-errors" class="text-red-400 text-sm space-y-1 bg-red-900 bg-opacity-30 p-3 rounded-lg hidden"></div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <button id="login-submit" type="submit" 
+                            class="w-full sm:w-auto bg-gradient-to-r from-accent-orange to-vibrant-orange hover:from-orange-500 hover:to-orange-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-orange-light flex items-center justify-center gap-2">
+                        <span>ورود به حساب</span>
+                        <span id="login-spinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    </button>
+                    <a href="{% url 'accounts:register' %}" 
+                       class="text-accent-orange hover:text-vibrant-orange font-medium transition-colors duration-200">
+                        حساب ندارید؟ ثبت‌نام کنید
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Additional help and info -->
+        <div class="text-center space-y-2">
+            <p class="text-gray-400 text-sm">
+                <a href="{% url 'accounts:contact' %}" class="text-accent-orange hover:text-vibrant-orange transition-colors duration-200">
+                    رمز عبور خود را فراموش کرده‌اید؟
+                </a>
+            </p>
+            <p class="text-gray-400 text-sm">
+                <a href="{% url 'accounts:contact' %}" class="text-accent-orange hover:text-vibrant-orange transition-colors duration-200">
+                    نیاز به کمک دارید؟ با ما تماس بگیرید
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

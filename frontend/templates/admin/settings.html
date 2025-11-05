@@ -1,0 +1,28 @@
+{% extends 'admin/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{{ title }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'admin_panel:admin_update_settings' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="card_number" class="form-label">شماره کارت:</label>
+                    <input type="text" class="form-control" id="card_number" name="card_number" value="{{ card_number }}">
+                </div>
+                <div class="mb-3">
+                    <label for="card_owner" class="form-label">نام صاحب کارت:</label>
+                    <input type="text" class="form-control" id="card_owner" name="card_owner" value="{{ card_owner }}">
+                </div>
+                <button type="submit" class="btn btn-primary">ذخیره تنظیمات</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

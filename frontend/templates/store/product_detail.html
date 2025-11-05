@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ product.name }} | کمبو و اکانت کالاف دیوتی | Abol StoRe{% endblock %}
+{% block description %}{{ product.description|truncatechars:160 }}{% endblock %}
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}{% endblock %}
+
+{% block content %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.name }}",
+  "image": "{% if product.webp_image %}{{ request.scheme }}://{{ request.get_host }}{{ product.webp_image.url }}{% elif product.image %}{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/images/logo.svg{% endif %}",
+  "description": "{{ product.description|striptags|truncatechars:160 }}",
+  "sku": "{{ product.pk }}",
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{{ product.get_absolute_url }}",
+    "priceCurrency": "IRR",
+    "price": "{{ product.price }}",
+    "itemCondition": "https://schema.org/NewCondition",
+    "availability": "{% if product.stock > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+  }
+}
+</script>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="md:flex">
+            <div class="md:w-1/2">
+                {% if product.image %}
+                    <picture>
+                        {% if product.webp_image %}
+                            <source srcset="{{ product.webp_image.url }}" type="image/webp">
+                        {% endif %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-auto object-cover" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/images/logo.svg';">
+                    </picture>
+                {% else %}
+                    <div class="w-full h-64 bg-gray-200 flex items-center justify-center">
+                        <img src="/static/images/logo.svg" alt="تصویر پیش‌فرض" class="w-1/2 h-auto opacity-50">
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="md:w-1/2 p-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-4 text-shadow">{{ product.name }}</h1>
+                
+                <div class="flex items-center mb-4">
+                    <span class="text-sm font-medium {% if product.guarantee_type == 'metaK' %}bg-orange-500{% else %}bg-blue-500{% endif %} text-white px-3 py-1 rounded-full">
+                        {{ product.get_guarantee_type_display }}
+                    </span>
+                    <span class="text-sm font-medium bg-green-500 text-white px-3 py-1 rounded-full mr-2">
+                        تضمین سوپرتاش
+                    </span>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-gray-800 leading-relaxed text-shadow">{{ product.description }}</p>
+                </div>
+                
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-2xl font-bold text-orange-600">{{ product.price|floatformat:0|intcomma }} تومان</span>
+                    <span class="text-gray-600">تعداد پارت: {{ product.stock }}</span>
+                </div>
+                
+                {% if product.is_available %}
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'orders:create_order' %}" class="mt-6">
+                            {% csrf_token %}
+                            {{ order_form.product.as_hidden }}
+                            
+                            <div class="mb-4">
+                                <label for="{{ order_form.quantity.id_for_label }}" class="block text-gray-700 font-medium mb-2">تعداد:</label>
+                                {{ order_form.quantity }}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ order_form.referral_code.id_for_label }}" class="block text-gray-700 font-medium mb-2">کد معرف (اختیاری):</label>
+                                {{ order_form.referral_code }}
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-md transition-colors duration-300">
+                                خرید محصول
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="mt-6">
+                            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="block w-full bg-orange-500 hover:bg-orange-600 text-white text-center font-bold py-3 px-4 rounded-md transition-colors duration-300">
+                                ورود و خرید محصول
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="mt-6">
+                        <button disabled class="w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-md cursor-not-allowed">
+                            ناموجود
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,583 @@
+{% extends 'admin/base.html' %}
+{% load humanize %}
+
+{% block title %}پنل مدیریت - آبول استور{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- هدر حرفه‌ای -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center bg-gradient-primary rounded-lg p-4 text-white">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-tachometer-alt"></i>
+                        داشبورد مدیریت
+                    </h1>
+                    <p class="mb-0 opacity-75">آبول استور - مدیریت فروشگاه اینترنتی</p>
+                </div>
+                <div class="text-center">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-4">
+                            <h4 class="mb-0 font-weight-bold">{{ sales_today|floatformat:0 }}</h4>
+                            <small class="opacity-75">فروش امروز (تومان)</small>
+                        </div>
+                        <div class="mr-4">
+                            <h4 class="mb-0 font-weight-bold">{{ new_orders_today }}</h4>
+                            <small class="opacity-75">سفارش جدید</small>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 font-weight-bold">{{ new_users_today }}</h4>
+                            <small class="opacity-75">کاربر جدید</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- کارت‌های آمار حرفه‌ای -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-scale">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-uppercase font-weight-bold mb-2">کل سفارشات</h6>
+                            <h3 class="font-weight-bold mb-0">{{ total_orders }}</h3>
+                            <small>
+                                <i class="fas fa-arrow-up"></i> {{ new_orders_today }} جدید
+                            </small>
+                        </div>
+                        <div class="bg-primary rounded-circle p-3 text-white">
+                            <i class="fas fa-shopping-cart fa-2x text-white animated-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 p-3">
+                    <a href="{% url 'admin_panel:admin_orders_list' %}" class="btn btn-outline-primary btn-sm btn-block admin-action-btn">
+                        مشاهده جزئیات <i class="fas fa-arrow-left mr-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-scale">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-uppercase font-weight-bold mb-2">در انتظار تأیید</h6>
+                            <h3 class="font-weight-bold mb-0">{{ pending_orders }}</h3>
+                            <small>نیاز به بررسی</small>
+                        </div>
+                        <div class="bg-warning rounded-circle p-3 text-white">
+                            <i class="fas fa-clock fa-2x text-white animated-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 p-3">
+                    <a href="{% url 'admin_panel:admin_orders_list' %}?status=waiting" class="btn btn-outline-warning btn-sm btn-block admin-action-btn">
+                        بررسی سفارشات <i class="fas fa-arrow-left mr-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-scale">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-uppercase font-weight-bold mb-2">کاربران</h6>
+                            <h3 class="font-weight-bold mb-0">{{ total_users }}</h3>
+                            <small>
+                                <i class="fas fa-arrow-up"></i> {{ new_users_today }} جدید
+                            </small>
+                        </div>
+                        <div class="bg-success rounded-circle p-3 text-white">
+                            <i class="fas fa-users fa-2x text-white animated-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 p-3">
+                    <a href="{% url 'admin_panel:admin_users_list' %}" class="btn btn-outline-success btn-sm btn-block admin-action-btn">
+                        مدیریت کاربران <i class="fas fa-arrow-left mr-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-2 col-lg-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-scale">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-uppercase font-weight-bold mb-2">محصولات</h6>
+                            <h3 class="font-weight-bold mb-0">{{ total_products }}</h3>
+                            <small>فعال در سیستم</small>
+                        </div>
+                        <div class="bg-info rounded-circle p-3 text-white">
+                            <i class="fas fa-box fa-2x text-white animated-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 p-3">
+                    <a href="{% url 'admin_panel:admin_products_list' %}" class="btn btn-outline-info btn-sm btn-block admin-action-btn">
+                        مدیریت محصولات <i class="fas fa-arrow-left mr-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 bg-gradient-danger text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-uppercase font-weight-bold mb-2 opacity-75">فروش کل</h6>
+                            <h3 class="font-weight-bold mb-0">{{ total_sales|floatformat:0|intcomma }} تومان</h3>
+                            <small class="opacity-75">
+                                <i class="fas fa-calendar-day"></i> امروز: {{ sales_today|floatformat:0|intcomma }} تومان
+                            </small>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-circle p-3">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 p-3">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-white" style="width: 75%"></div>
+                    </div>
+                    <small class="opacity-75 mt-2 d-block">رشد نسبت به دیروز: +12%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- بخش محتوای اصلی -->
+    <div class="row">
+        <!-- سفارشات اخیر با طراحی مدرن -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <div class="d-flex justify-content-between align-items-center p-3">
+                        <h5 class="mb-0 font-weight-bold text-nowrap">
+                            <i class="fas fa-shopping-bag text-primary mr-2"></i>
+                            سفارشات اخیر
+                        </h5>
+                        <a href="{% url 'admin_panel:admin_orders_list' %}" class="btn btn-outline-primary btn-sm admin-action-btn text-nowrap">
+                            مشاهده همه <i class="fas fa-arrow-left mr-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover modern-table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th class="border-0">#</th>
+                                    <th class="border-0">مشتری</th>
+                                    <th class="border-0">محصول</th>
+                                    <th class="border-0">مبلغ</th>
+                                    <th class="border-0">وضعیت</th>
+                                    <th class="border-0">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr class="border-0">
+                                    <td><strong class="text-primary">#{{ order.id }}</strong></td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white mr-2">
+                                                {{ order.user.phone_number|slice:":2" }}
+                                            </div>
+                                            <div>
+                                                <div class="font-weight-bold">{{ order.user.phone_number|default:"-" }}</div>
+                                                <small class="text-muted">{{ order.created_at|date:"H:i" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if order.product.image %}
+                                            <img src="{{ order.product.image.url }}" alt="{{ order.product.name }}" class="product-thumb mr-2">
+                                            {% endif %}
+                                            <span class="font-weight-bold">{{ order.product.name|truncatechars:25 }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="font-weight-bold text-success">
+                                            {{ order.total_price|floatformat:0|intcomma }} تومان
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-{{ order.status }}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'admin_panel:admin_order_detail' order.id %}" class="btn btn-outline-primary btn-sm" data-toggle="tooltip" title="مشاهده جزئیات">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'admin_panel:admin_order_edit' order.id %}" class="btn btn-outline-warning btn-sm" data-toggle="tooltip" title="ویرایش">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">هیچ سفارشی یافت نشد</h5>
+                            <p class="text-muted">در حال حاضر سفارشی برای نمایش وجود ندارد</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- بخش آمار و تنظیمات -->
+        <div class="col-lg-4">
+            <!-- کارت آمار سریع -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h5 class="mb-0 font-weight-bold p-3">
+                        <i class="fas fa-chart-pie text-info mr-2"></i>
+                        آمار سریع
+                    </h5>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6 class="stat-title">سفارشات امروز</h6>
+                                <h4 class="stat-value text-primary">{{ new_orders_today }}</h4>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6 class="stat-title">کاربران جدید</h6>
+                                <h4 class="stat-value text-success">{{ new_users_today }}</h4>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon bg-warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6 class="stat-title">در انتظار</h6>
+                                <h4 class="stat-value text-warning">{{ pending_orders }}</h4>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon bg-info">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h6 class="stat-title">محصولات</h6>
+                                <h4 class="stat-value text-info">{{ total_products }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- تنظیمات سریع -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h5 class="mb-0 font-weight-bold p-3">
+                        <i class="fas fa-cog text-info mr-2"></i>
+                        تنظیمات سریع
+                    </h5>
+                </div>
+                <div class="card-body pt-0">
+                    <form method="post" action="{% url 'admin_panel:admin_update_settings' %}" class="settings-form">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label for="card_number" class="font-weight-bold">شماره کارت</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
+                                </div>
+                                <input type="text" name="card_number" id="card_number" value="{{ card_number|default:'' }}" 
+                                       class="form-control form-control-lg" placeholder="شماره کارت">
+                            </div>
+                            <small class="form-text">برای نمایش به مشتریان</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="card_owner" class="font-weight-bold">نام صاحب کارت</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                                <input type="text" name="card_owner" id="card_owner" value="{{ card_owner|default:'' }}" 
+                                       class="form-control form-control-lg" placeholder="نام صاحب کارت">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="telegram_admin_chat_id" class="font-weight-bold">شناسه تلگرام</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fab fa-telegram"></i></span>
+                                </div>
+                                <input type="text" name="telegram_admin_chat_id" id="telegram_admin_chat_id" value="{{ telegram_admin_chat_id|default:'' }}" 
+                                       class="form-control form-control-lg" placeholder="شناسه چت تلگرام">
+                            </div>
+                            <small class="form-text">برای اعلان‌های سفارش</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-info btn-lg btn-block shadow-sm">
+                            <i class="fas fa-save mr-2"></i>
+                            ذخیره تنظیمات
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .stats-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        opacity: 0.9;
+    }
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stats-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+    .orders-table {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        background: white;
+        border: none;
+    }
+    .orders-table thead th {
+        border: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 20px 15px;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        color: #495057;
+    }
+    .orders-table tbody td {
+        padding: 20px 15px;
+        vertical-align: middle;
+        border-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    .orders-table tbody tr {
+        transition: all 0.3s ease;
+    }
+    .orders-table tbody tr:hover {
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: none;
+    }
+    .btn-action {
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border-radius: 15px;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .empty-state h5 {
+        font-weight: 400;
+        margin-bottom: 10px;
+        color: #495057;
+    }
+    .page-title {
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        position: relative;
+        padding-bottom: 15px;
+        font-size: 2rem;
+    }
+    .page-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(45deg, #3498db, #2ecc71, #e74c3c);
+        border-radius: 2px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* استایل‌های جدید برای آمار سریع */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .stat-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    .stat-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 15px;
+        font-size: 1.2rem;
+        color: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .stat-content {
+        flex: 1;
+    }
+    .stat-title {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    /* استایل فرم تنظیمات */
+    .settings-form .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+    }
+    .settings-form .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    .settings-form .input-group-text {
+        background: linear-gradient(135deg, #3498db, #2ecc71);
+        color: white;
+        border: none;
+        border-radius: 0 10px 10px 0;
+    }
+    
+    /* انیمیشن‌ها */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .card:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+    
+    .card:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+    
+    /* ریسپانسیو */
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        .page-title {
+            font-size: 1.5rem;
+        }
+        .stats-number {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock content %}

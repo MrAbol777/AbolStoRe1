@@ -1,0 +1,20 @@
+{
+  "name": "abolstore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "tailwind:build": "tailwindcss -i ./static/css/input.css -o ./static/css/tailwind.css --minify",
+    "tailwind:watch": "tailwindcss -i ./static/css/tailwind.css -o ./static/css/main.css --watch",
+    "js:build": "terser static/js/animations.js -o static/js/animations.min.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18",
+    "terser": "^5.44.0"
+  }
+}

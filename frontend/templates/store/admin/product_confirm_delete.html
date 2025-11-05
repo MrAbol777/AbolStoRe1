@@ -1,0 +1,27 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}حذف محصول - آبول استور{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="h5 mb-0">حذف محصول</h1>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">آیا از حذف محصول "{{ product.name }}" اطمینان دارید؟</p>
+                    <form method="post" action="{% url 'admin_panel:admin_product_delete' product.id %}">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-danger">بله، حذف شود</button>
+                            <a href="{% url 'admin_panel:products_list' %}" class="btn btn-secondary">انصراف</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

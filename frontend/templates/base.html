@@ -1,0 +1,533 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Abol StoRe | فروش کمبو و اکانت کالاف دیوتی در یزد و ایران{% endblock %}</title>
+    <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Abol StoRe",
+      "image": "https://storeabol.t.me/static/images/logo.svg",
+      "url": "https://storeabol.t.me",
+      "telephone": "+989027147005",
+      "email": "dostgolabolfazl@gmail.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "صفاییه",
+        "addressLocality": "یزد",
+        "addressCountry": "ایران"
+      },
+      "openingHours": "Mo-Su 00:00-23:59",
+      "sameAs": [
+        "https://storeabol.t.me"
+      ]
+    }
+    </script>
+    <meta name="description" content="{% block description %}Abol StoRe - بهترین فروشگاه آنلاین کمبوهای گیمینگ و اکانت‌های کالاف دیوتی در یزد و سراسر ایران. خرید امن و سریع با پشتیبانی 24/7.{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    <link rel="stylesheet" href="{% static 'css/persian-fonts.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="dark:bg-very-dark-bg dark:text-gray-100">
+    <div class="background-depth-effect"></div>
+    <header class="liquid-glass-effect shadow-orange-glow fixed top-0 left-0 right-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none transition-transform duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+            
+            <a href="{% url 'store:home' %}" class="text-2xl font-bold text-center mx-auto md:mx-0 relative nav-persian-font">
+                <span class="text-white font-extrabold tracking-wider relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-white via-orange-300 to-white animate-shimmer">Abol StoRe</span>
+                <span class="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30 blur-sm animate-pulse"></span>
+            </a>
+            
+            <div class="flex items-center md:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-4">
+                <!-- منوی لیکویید گلسی -->
+                <div class="liquid-glass-nav rounded-2xl px-6 py-3 flex items-center space-x-6">
+                    <a href="{% url 'store:home' %}" class="nav-link-persian text-white transition-all duration-300 px-3 py-2 rounded-lg flex items-center neon-hover-effect {% if request.path == '/' %}active-nav-link{% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                            <span class="font-medium">خانه</span>
+                        </a>
+                    
+                    <div>
+                        <a href="{% url 'store:product_list' %}" id="desktop-products-link" class="nav-link-persian text-white transition-all duration-300 px-3 py-2 rounded-lg flex items-center neon-hover-effect {% if request.path == '/store/products/' or '/store/products/type/' in request.path %}active-nav-link{% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <span class="font-medium">محصولات</span>
+                            <svg id="desktop-products-arrow" class="w-4 h-4 mr-1 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </a>
+
+                    </div>
+
+                    <a href="{% url 'accounts:contact' %}" id="contact-us-link" class="nav-link-persian text-white transition-all duration-300 px-3 py-2 rounded-lg flex items-center neon-hover-effect {% if request.path == '/contact-us/' %}active-nav-link{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="font-medium">تماس با ما</span>
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="nav-link-persian text-white hover:text-accent-orange transition-all duration-300 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 flex items-center">
+                            <i class="fas fa-user-circle ml-2"></i>
+                            <span class="font-medium">پروفایل</span>
+                        </a>
+
+                        <a href="{% url 'accounts:logout' %}" class="nav-link-persian text-white hover:text-accent-orange transition-all duration-300 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 flex items-center">
+                            <i class="fas fa-sign-out-alt ml-2"></i>
+                            <span class="font-medium">خروج</span>
+                        </a>
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin_panel:admin_dashboard' %}" class="nav-link-persian text-white hover:text-accent-orange transition-all duration-300 px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 flex items-center">
+                                <i class="fas fa-user-shield ml-2"></i>
+                                <span class="font-medium">پنل مدیریت</span>
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="nav-link-persian text-white transition-all duration-300 px-3 py-2 rounded-lg flex items-center neon-hover-effect {% if request.path == '/account/login/' %}active-nav-link{% endif %}">
+                            <i class="fas fa-sign-in-alt ml-2"></i>
+                            <span class="font-medium">ورود</span>
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="nav-link-persian text-white transition-all duration-300 px-3 py-2 rounded-lg flex items-center neon-hover-effect {% if request.path == '/account/register/' %}active-nav-link{% endif %}">
+                            <i class="fas fa-user-plus ml-2"></i>
+                            <span class="font-medium">ثبت نام</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 w-full bg-gray-800 bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-lg z-40 py-2 liquid-glass-effect">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="{% url 'store:home' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/' %}active-nav-link{% endif %}">خانه</a>
+                    <div class="relative">
+                        <button id="mobile-products-button" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center justify-between">
+                            محصولات
+                            <svg id="mobile-products-arrow" class="w-4 h-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div id="mobile-category-dropdown" class="hidden pl-5 pr-2 py-1 space-y-1">
+                            <a href="{% url 'store:product_list' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/' %}active-nav-link{% endif %}">همه محصولات</a>
+                            <a href="{% url 'store:product_list_by_type' 'combo' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/type/combo/' %}active-nav-link{% endif %}">کمبولیست‌ها</a>
+                            <a href="{% url 'store:product_list_by_type' 'account' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/type/account/' %}active-nav-link{% endif %}">اکانت‌ها</a>
+                            <a href="{% url 'store:product_list_by_type' 'cp' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/type/cp/' %}active-nav-link{% endif %}">CP</a>
+                        </div>
+
+        <!-- Desktop Sidebar Category Dropdown -->
+        <div id="desktop-sidebar-category-dropdown" class="fixed top-0 left-0 w-64 h-full bg-gray-800 bg-opacity-95 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+            <div class="p-4">
+                <button id="desktop-sidebar-close-button" class="text-white text-2xl absolute top-2 right-4">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 class="text-white text-lg font-bold mb-4 mt-8">دسته‌بندی‌ها</h2>
+                <a href="{% url 'store:product_list' %}" class="block px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-10 flex items-center">
+                    <i class="fas fa-boxes ml-2 text-accent-orange"></i>
+                    همه محصولات
+                </a>
+                {% for category in categories %}
+                    <a href="{% url 'store:product_list_by_category' category.slug %}" class="block px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-10 flex items-center">
+                        <i class="{{ category.icon }} ml-2 text-accent-orange"></i> {# Assuming category has an icon field #}
+                        {{ category.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        </div>
+        <a href="#" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium neon-hover-effect {% if request.path == '/contact-us/' %}active-nav-link{% endif %}">تماس با ما</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/account/profile/' %}active-nav-link{% endif %}">پروفایل</a>
+                        <a href="{% url 'orders:cart' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/orders/cart/' %}active-nav-link{% endif %}">سبد خرید</a>
+                        <a href="{% url 'accounts:logout' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect">خروج</a>
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin_panel:admin_dashboard' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/admin-panel/dashboard/' %}active-nav-link{% endif %}">پنل مدیریت</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/account/login/' %}active-nav-link{% endif %}">ورود</a>
+                        <a href="{% url 'accounts:register' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/account/register/' %}active-nav-link{% endif %}">ثبت نام</a>
+                    {% endif %}
+                </div>
+            </div>
+                    
+
+                    
+                </div>
+                
+
+            </div>
+        </nav>
+    </header>
+    
+    <!-- منوی موبایل -->
+    <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-80 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+        <div class="h-full w-4/5 max-w-sm bg-glossy-black bg-opacity-95 backdrop-blur-lg p-6 overflow-y-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-xl font-bold text-white">منو</h2>
+                <button id="mobile-menu-close" class="text-white focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4" id="mobile-main-menu">
+                <a href="{% url 'store:home' %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        خانه
+                    </span>
+                </a>
+                <a href="#" id="mobile-products-link" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        محصولات
+                    </span>
+                </a>
+                <div class="py-2">
+                    <div class="h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent opacity-30"></div>
+                </div>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:profile' %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                        <span class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            پروفایل
+                        </span>
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                        <span class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            خروج
+                        </span>
+                    </a>
+                    {% if user.is_staff %}
+                        <a href="/admin/" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                                </svg>
+                                پنل مدیریت
+                            </span>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="#" id="login-register-link" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                        <span class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                            </svg>
+                            ورود / ثبت نام
+                        </span>
+                    </a>
+                {% endif %}
+                <a href="{% url 'accounts:contact' %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        تماس با ما
+                    </span>
+                </a>
+                <a href="{% url 'store:home' %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        قوانین خرید
+                    </span>
+                </a>
+                <a href="{% url 'orders:order_list' %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        سبد خرید
+                        <span class="bg-vibrant-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center mr-2">
+                            {{ cart_count }}
+                        </span>
+                    </span>
+                </a>
+            </div>
+            <div class="space-y-4 hidden" id="mobile-category-menu">
+                <a href="#" id="back-to-main-menu" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        بازگشت به منوی اصلی
+                    </span>
+                </a>
+                <a href="{% url 'store:product_list' %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        <i class="fas fa-boxes ml-2 text-accent-orange"></i>
+                        همه محصولات
+                    </span>
+                </a>
+                {% for category in categories %}
+                <a href="{% url 'store:product_list_by_category' category.slug %}" class="block py-3 px-4 text-white hover:bg-accent-orange hover:bg-opacity-20 rounded-lg transition-all duration-300 transform hover:translate-x-2">
+                    <span class="flex items-center">
+                        {% if category.icon %}
+                        <img src="{{ category.icon.url }}" alt="{{ category.name }}" class="w-5 h-5 ml-2">
+                        {% else %}
+                        <i class="fas fa-tag ml-2 text-blue-400"></i>
+                        {% endif %}
+                        {{ category.name }}
+                    </span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- فاصله برای هدر ثابت -->
+    <div class="pt-16"></div>
+    
+    <div id="welcomeMessage" class="hidden fixed top-16 left-0 right-0 p-4 bg-accent-orange/20 text-white text-center liquid-glass-effect z-50 transform -translate-y-full transition-transform duration-500">
+      به Abol StoRe خوش‌آمدید — فروشگاه تخصصی گیمینگ
+    </div>
+
+    <main class="container mx-auto px-6 py-8 relative z-0">
+        {% if messages %}
+            <div class="mb-8">
+                {% for message in messages %}
+                    <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block admin_content %}{% endblock admin_content %}
+{% block content %}{% endblock %}
+    </main>
+
+    <footer class="liquid-glass-effect shadow-orange-glow mt-12 relative z-10">
+        <div class="container mx-auto px-6 py-8 text-center text-white">
+            <p>&copy; 2023 AbolStoRe. تمامی حقوق محفوظ است.</p>
+        </div>
+    </footer>
+    <script>
+        // منوی موبایل
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        
+        // لینک‌های ورود/ثبت نام
+        const loginRegisterLink = document.getElementById('login-register-link');
+        
+        // باز کردن منوی موبایل
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.remove('-translate-x-full');
+                mobileMenuButton.classList.add('rotate-90');
+                document.body.classList.add('overflow-hidden');
+            });
+        }
+        
+        // بستن منوی موبایل
+        if (mobileMenuClose && mobileMenu) {
+            mobileMenuClose.addEventListener('click', function() {
+                mobileMenu.classList.add('-translate-x-full');
+                mobileMenuButton.classList.remove('rotate-90');
+                document.body.classList.remove('overflow-hidden');
+            });
+        }
+        
+        // بستن منو با کلیک خارج از آن
+        document.addEventListener('click', function(event) {
+            // برای منوی موبایل
+            if (mobileMenu && !mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target) && !mobileMenu.classList.contains('-translate-x-full')) {
+                mobileMenu.classList.add('-translate-x-full');
+                mobileMenuButton.classList.remove('rotate-90');
+                document.body.classList.remove('overflow-hidden');
+            }
+        });
+        
+        // لینک ورود/ثبت نام
+        if (loginRegisterLink) {
+            loginRegisterLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                // اینجا می‌توانید مودال ورود/ثبت نام را نمایش دهید یا به صفحه مربوطه هدایت کنید
+                window.location.href = "{% url 'accounts:login' %}";
+            });
+        }
+
+        // Mobile Category Menu Logic
+        const mobileProductsLink = document.getElementById('mobile-products-link');
+        const mobileMainMenu = document.getElementById('mobile-main-menu');
+        const mobileCategoryMenu = document.getElementById('mobile-category-menu');
+        const backToMainMenu = document.getElementById('back-to-main-menu');
+
+        if (mobileProductsLink && mobileMainMenu && mobileCategoryMenu && backToMainMenu) {
+            mobileProductsLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                mobileMainMenu.classList.add('hidden');
+                mobileCategoryMenu.classList.remove('hidden');
+            });
+
+            backToMainMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                mobileCategoryMenu.classList.add('hidden');
+                mobileMainMenu.classList.remove('hidden');
+            });
+        }
+
+
+
+    </script>
+    {% block extra_js %}
+    {% endblock %}
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+    <script src="{% static 'js/animations.min.js' %}"></script>
+    
+    <style>
+        /* انیمیشن‌های اضافی */
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        .animate-shimmer {
+            animation: shimmer 3s infinite;
+            background-size: 200% auto;
+        }
+        
+        /* افکت شیشه‌ای */
+        .liquid-glass-effect {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        /* سایه نارنجی */
+        .shadow-orange-glow {
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.3), 
+                        0 0 30px rgba(255, 165, 0, 0.1);
+        }
+        
+        /* ترنزیشن برای منوی دسکتاپ */
+        #desktop-menu {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+        
+        #desktop-menu.opacity-100 {
+            opacity: 1;
+        }
+        
+        /* بهبود خوانایی متن‌ها */
+        .text-shadow {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .text-shadow-lg {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        
+        .dark .text-shadow-dark {
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        }
+        
+        .dark .text-on-dark {
+            color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .light .text-on-light {
+            color: rgba(0, 0, 0, 0.85);
+        }
+        .admin-action-btn {
+            transition: all 0.3s ease; /* Ensures smooth animations for all properties */
+        }
+        .admin-action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .admin-action-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
+                const mobileProductsButton = document.getElementById('mobile-products-button');
+                const mobileCategoryDropdown = document.getElementById('mobile-category-dropdown');
+                const desktopCategoryDropdown = document.getElementById('desktop-category-dropdown');
+                const desktopProductsLink = document.getElementById('desktop-products-link');
+                console.log('desktopProductsLink after definition:', desktopProductsLink);
+                // Mobile menu toggle
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+
+                // Mobile products dropdown toggle
+                mobileProductsButton.addEventListener('click', function() {
+                    mobileCategoryDropdown.classList.toggle('hidden');
+                    mobileProductsButton.querySelector('svg').classList.toggle('rotate-180');
+                });
+
+                // Desktop Sidebar Category Dropdown Logic
+                
+                const desktopSidebarCategoryDropdown = document.getElementById('desktop-sidebar-category-dropdown');
+                const desktopSidebarCloseButton = document.getElementById('desktop-sidebar-close-button');
+                console.log('desktopSidebarCategoryDropdown:', desktopSidebarCategoryDropdown);
+                console.log('desktopSidebarCloseButton:', desktopSidebarCloseButton);
+
+                if (desktopProductsLink && desktopSidebarCategoryDropdown && desktopSidebarCloseButton) {
+                    console.log('All desktop sidebar elements found. Attaching event listeners.');
+                    desktopProductsLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        desktopSidebarCategoryDropdown.classList.remove('-translate-x-full');
+                        document.body.classList.add('overflow-hidden'); // Prevent scrolling when sidebar is open
+                    });
+
+                    desktopSidebarCloseButton.addEventListener('click', function() {
+                        desktopSidebarCategoryDropdown.classList.add('-translate-x-full');
+                        document.body.classList.remove('overflow-hidden');
+                    });
+
+                    document.addEventListener('click', function(event) {
+                        if (!desktopProductsLink.contains(event.target) && !desktopSidebarCategoryDropdown.contains(event.target) && !desktopSidebarCategoryDropdown.classList.contains('-translate-x-full')) {
+                            desktopSidebarCategoryDropdown.classList.add('-translate-x-full');
+                            document.body.classList.remove('overflow-hidden');
+                        }
+                    });
+                }
+
+                // Desktop products dropdown hover (handled by Tailwind's group-hover classes)
+                // No explicit JS needed here due to Tailwind's utility-first approach
+            });
+        </script>
+
+    </body>
+</html>

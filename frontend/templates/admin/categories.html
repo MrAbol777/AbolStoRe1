@@ -1,0 +1,124 @@
+{% extends 'admin/base.html' %}
+{% load i18n static %}
+
+{% block title %}{% trans 'مدیریت دسته بندی ها' %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">{% trans 'مدیریت دسته بندی ها' %}</h1>
+
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
+        <h2 class="text-xl font-semibold mb-4">{% trans 'افزودن دسته بندی جدید' %}</h2>
+        <form method="post" action="{% url 'store:admin_category_create' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="id_name" class="block text-sm font-medium text-gray-300">{% trans 'نام دسته' %}:</label>
+                <input type="text" name="name" id="id_name" required
+                       class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="id_slug" class="block text-sm font-medium text-gray-300">{% trans 'اسلاگ دسته' %}:</label>
+                <input type="text" name="slug" id="id_slug"
+                       class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="id_icon" class="block text-sm font-medium text-gray-300">{% trans 'آیکون' %}:</label>
+                <input type="text" name="icon" id="id_icon"
+                       class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                       placeholder="{% trans 'مثال: fa-solid fa-gamepad' %}">
+            </div>
+            <div>
+                <label for="id_description" class="block text-sm font-medium text-gray-300">{% trans 'توضیحات کوتاه' %}:</label>
+                <textarea name="description" id="id_description"
+                          class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"></textarea>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" name="is_active" id="id_is_active"
+                       class="h-4 w-4 text-indigo-600 border-gray-600 rounded focus:ring-indigo-500">
+                <label for="id_is_active" class="ml-2 block text-sm text-gray-300">{% trans 'فعال' %}</label>
+            </div>
+            <div class="flex items-center">
+                <input type="checkbox" name="is_pinned" id="id_is_pinned"
+                       class="h-4 w-4 text-indigo-600 border-gray-600 rounded focus:ring-indigo-500">
+                <label for="id_is_pinned" class="ml-2 block text-sm text-gray-300">{% trans 'پین شده' %}</label>
+            </div>
+            <div>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700">
+                    {% trans 'افزودن دسته بندی' %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">{% trans 'لیست دسته بندی ها' %}</h2>
+        <ul id="categories-list" class="space-y-2">
+            {% for category in categories %}
+            <li class="category-item bg-gray-700 p-3 rounded-md flex justify-between items-center" data-id="{{ category.id }}">
+                <span class="text-white">{{ category.name }} ({{ category.slug }})</span>
+                <div class="flex space-x-2">
+                    <a href="{% url 'store:admin_category_edit' category.id %}"
+                       class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">{% trans 'ویرایش' %}</a>
+                    <form method="post" action="{% url 'store:admin_category_delete' category.id %}" onsubmit="return confirm('{% trans 'آیا از حذف این دسته بندی اطمینان دارید؟' %}');">
+                        {% csrf_token %}
+                        <button type="submit" class="px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">{% trans 'حذف' %}</button>
+                    </form>
+                </div>
+            </li>
+            {% empty %}
+            <li class="text-gray-400">{% trans 'هیچ دسته بندی یافت نشد.' %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var el = document.getElementById('categories-list');
+        if (el) {
+            var sortable = Sortable.create(el, {
+                animation: 150,
+                onEnd: function (evt) {
+                    var itemEl = evt.item;  // dragged HTMLElement
+                    var newIndex = evt.newIndex; // new index within parent
+                    var oldIndex = evt.oldIndex; // old index within parent
+
+                    if (newIndex !== oldIndex) {
+                        var categoryIds = Array.from(sortable.el.children).map(function(item) {
+                            return item.dataset.id;
+                        });
+
+                        fetch('{% url "store:admin_category_reorder" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ 'category_ids': categoryIds })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                console.log('Categories reordered successfully.');
+                            } else {
+                                console.error('Error reordering categories:', data.message);
+                                // Optionally revert the UI change if reorder fails on server
+                                sortable.sort(categoryIds); // This might need more sophisticated handling
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Network error:', error);
+                            // Optionally revert the UI change
+                            sortable.sort(categoryIds);
+                        });
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
