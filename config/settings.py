@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.telegram_bot',
     'apps.admin_panel',
+    'apps.contact',
 ]
 
 MIDDLEWARE = [
@@ -203,3 +204,4 @@ LOGGING = {
     },
 }
 
+

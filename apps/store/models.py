@@ -53,7 +53,7 @@ class Category(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('store:category_detail', kwargs={'category_slug': self.slug})
+        return reverse('store:product_list_by_category', kwargs={'category_slug': self.slug})
 
 
 class Product(models.Model):
@@ -88,6 +88,19 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name, allow_unicode=True)
+        else:
+            self.slug = slugify(self.slug, allow_unicode=True)
+
+        original_slug = self.slug
+        queryset = Product.objects.all()
+        if self.pk: # If updating an existing object, exclude itself from the queryset
+            queryset = queryset.exclude(pk=self.pk)
+
+        count = 1
+        while queryset.filter(slug=self.slug).exists():
+            self.slug = f"{original_slug}-{count}"
+            count += 1
+
         if self.image:
             # Check if the image has changed
             if not self.pk or not Product.objects.get(pk=self.pk).image == self.image:

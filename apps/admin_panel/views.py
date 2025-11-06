@@ -209,16 +209,11 @@ def admin_products_list(request):
 
 @admin_required
 def admin_product_create(request):
-    print("admin_product_create function called")
-    print(f"Request method: {request.method}")
     """ایجاد محصول جدید"""
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
-        print("Before form.is_valid() check")
         if form.is_valid():
-            print("form is valid, attempting to save product")
             product = form.save()
-            print(f"Product saved with ID: {product.id}")
             messages.success(request, 'محصول با موفقیت ایجاد شد.')
             return redirect('admin_panel:admin_products_list') # Changed redirect to admin_panel:admin_products_list
         else:

@@ -1,4 +1,4 @@
-# نمایش‌ها و کنترلرهای مربوط به پنل ادمین برای محصولات و دسته‌بندی‌ها
+# نمایش‌ها و کنترلرهای مربوذ به پنل ادمین برای محصولات و دسته‌بندی‌ها
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -16,11 +16,6 @@ def product_list_admin(request):
 
 @login_required
 def product_create(request):
-    """ایجاد محصول جدید"""
-    if not request.user.is_staff:
-        messages.error(request, 'شما دسترسی به این بخش را ندارید.')
-        return redirect('store:home')
-        
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
@@ -34,23 +29,17 @@ def product_create(request):
 
 @login_required
 def product_update(request, pk):
-    """ویرایش محصول"""
-    if not request.user.is_staff:
-        messages.error(request, 'شما دسترسی به این بخش را ندارید.')
-        return redirect('store:home')
-        
-    product = get_object_or_404(Product, pk=pk)
-    
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
             messages.success(request, 'محصول با موفقیت بروزرسانی شد.')
             return redirect('store:product_list_admin')
+        else:
+            messages.error(request, 'خطا در بروزرسانی محصول. لطفا اطلاعات را بررسی کنید.')
     else:
         form = ProductForm(instance=product)
-    
-    return render(request, 'store/admin/product_form.html', {'form': form, 'title': 'ویرایش محصول', 'product': product})
+    return render(request, 'store/admin/product_form.html', {'form': form, 'product': product})
 
 @login_required
 def product_delete(request, pk):
@@ -137,3 +126,5 @@ def admin_category_reorder(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+

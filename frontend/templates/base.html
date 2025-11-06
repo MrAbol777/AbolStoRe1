@@ -51,13 +51,7 @@
                 <span class="absolute inset-0 bg-gradient-to-r from-transparent via-orange-500 to-transparent opacity-30 blur-sm animate-pulse"></span>
             </a>
             
-            <div class="flex items-center md:hidden">
-                <button id="mobile-menu-button" class="text-white focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
+
 
             <div class="hidden md:flex items-center space-x-4">
                 <!-- منوی لیکویید گلسی -->
@@ -121,15 +115,9 @@
                 <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                     <a href="{% url 'store:home' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/' %}active-nav-link{% endif %}">خانه</a>
                     <div class="relative">
-                        <button id="mobile-products-button" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center justify-between">
-                            محصولات
-                            <svg id="mobile-products-arrow" class="w-4 h-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        <div id="mobile-category-dropdown" class="hidden pl-5 pr-2 py-1 space-y-1">
-                            <a href="{% url 'store:product_list' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/' %}active-nav-link{% endif %}">همه محصولات</a>
-                            <a href="{% url 'store:product_list_by_type' 'combo' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/type/combo/' %}active-nav-link{% endif %}">کمبولیست‌ها</a>
-                            <a href="{% url 'store:product_list_by_type' 'account' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/type/account/' %}active-nav-link{% endif %}">اکانت‌ها</a>
-                            <a href="{% url 'store:product_list_by_type' 'cp' %}" class="block px-4 py-2 text-sm text-white neon-hover-effect {% if request.path == '/store/products/type/cp/' %}active-nav-link{% endif %}">CP</a>
+                        
+
+            
                         </div>
 
         <!-- Desktop Sidebar Category Dropdown -->
@@ -152,7 +140,7 @@
             </div>
         </div>
         </div>
-        <a href="#" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium neon-hover-effect {% if request.path == '/contact-us/' %}active-nav-link{% endif %}">تماس با ما</a>
+        <a href="/contact-us/" class="text-white hover:bg-gray-700 block px-3 py-2 rounded-md text-base font-medium neon-hover-effect {% if request.path == '/contact-us/' %}active-nav-link{% endif %}">تماس با ما</a>
                     {% if user.is_authenticated %}
                         <a href="{% url 'accounts:profile' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/account/profile/' %}active-nav-link{% endif %}">پروفایل</a>
                         <a href="{% url 'orders:cart' %}" class="block px-3 py-2 text-base font-medium text-white neon-hover-effect {% if request.path == '/orders/cart/' %}active-nav-link{% endif %}">سبد خرید</a>
@@ -480,7 +468,6 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const mobileMenuButton = document.getElementById('mobile-menu-button');
                 const mobileMenu = document.getElementById('mobile-menu');
-                const mobileProductsButton = document.getElementById('mobile-products-button');
                 const mobileCategoryDropdown = document.getElementById('mobile-category-dropdown');
                 const desktopCategoryDropdown = document.getElementById('desktop-category-dropdown');
                 const desktopProductsLink = document.getElementById('desktop-products-link');
@@ -488,12 +475,6 @@
                 // Mobile menu toggle
                 mobileMenuButton.addEventListener('click', function() {
                     mobileMenu.classList.toggle('hidden');
-                });
-
-                // Mobile products dropdown toggle
-                mobileProductsButton.addEventListener('click', function() {
-                    mobileCategoryDropdown.classList.toggle('hidden');
-                    mobileProductsButton.querySelector('svg').classList.toggle('rotate-180');
                 });
 
                 // Desktop Sidebar Category Dropdown Logic

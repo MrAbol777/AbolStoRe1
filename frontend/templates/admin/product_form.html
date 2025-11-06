@@ -10,7 +10,7 @@
             <h3 class="card-title">{{ title }}</h3>
         </div>
         <div class="card-body">
-            <form method="post" enctype="multipart/form-data" action="{% url 'admin_panel:admin_product_create' %}">
+            <form method="post" enctype="multipart/form-data" action="{% if product %}{% url 'admin_panel:admin_product_edit' product.id %}{% else %}{% url 'admin_panel:admin_product_create' %}{% endif %}">
                 {% csrf_token %}
                 {{ form|crispy }}
                 <button type="submit" class="btn btn-primary">ذخیره</button>

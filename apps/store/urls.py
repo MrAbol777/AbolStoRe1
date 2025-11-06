@@ -18,7 +18,7 @@ register_converter(PersianSlugConverter, 'persian_slug')
 urlpatterns = [
     path('', views.HomeView.as_view(), name='home'),
     path('products/', views.HomeView.as_view(), name='product_list'),
-    path('products/type/<str:product_type>/', views.ProductListView.as_view(), name='product_list_by_type'),
+    path('products/type/<str:category_slug>/', views.ProductListView.as_view(), name='product_list_by_type'),
     path('product/<persian_slug:slug>/', views.ProductDetailView.as_view(), name='product_detail'),
     path('category/<persian_slug:category_slug>/', views.CategoryDetailView.as_view(), name='product_list_by_category'),
 

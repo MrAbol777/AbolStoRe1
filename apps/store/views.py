@@ -23,7 +23,8 @@ class HomeView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.filter(is_active=True).order_by('order', 'name')
+        categories = Category.objects.filter(is_active=True).order_by('order', 'name')
+        context['categories'] = categories
         return context
 
 class ProductDetailView(DetailView):
@@ -64,8 +65,6 @@ class ProductListView(ListView):
     context_object_name = 'products'
 
     def get_queryset(self):
-        product_type = self.kwargs['product_type']
-        # در اینجا می‌توانید منطق فیلتر کردن بر اساس product_type را اضافه کنید
-        # مثلاً اگر product_type برابر با 'combo' بود، محصولات کمبو را برگردانید
-        # این یک مثال ساده است و ممکن است نیاز به منطق پیچیده‌تری داشته باشد
-        return Product.objects.filter(product_type=product_type, is_active=True).order_by('-created_at')
+        category_slug = self.kwargs['category_slug']
+        self.category = get_object_or_404(Category, slug=category_slug)
+        return Product.objects.filter(category=self.category, is_active=True).order_by('-created_at')

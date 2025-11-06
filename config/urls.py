@@ -19,6 +19,7 @@ urlpatterns = [
     path('accounts/', include(('apps.accounts.urls', 'accounts'), namespace='accounts')),
     path('orders/', include(('apps.orders.urls', 'orders'), namespace='orders')),
     path('admin-panel/', include('apps.admin_panel.urls', namespace='admin_panel')),
+    path('contact-us/', include(('apps.contact.urls', 'contact'), namespace='contact')),
     # سپس پنل کلاسیک جنگو
     path('admin/', admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
