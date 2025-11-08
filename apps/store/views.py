@@ -50,7 +50,7 @@ class CategoryDetailView(ListView):
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
         if self.category.slug == "all-products":
-            return Product.objects.filter(is_active=True).order_by('-sales_count', '-created_at')
+            return Product.objects.all().order_by('-sales_count', '-created_at')
         return Product.objects.filter(category=self.category, is_active=True).order_by('-created_at')
 
     def get_context_data(self, **kwargs):
@@ -67,4 +67,4 @@ class ProductListView(ListView):
     def get_queryset(self):
         category_slug = self.kwargs['category_slug']
         self.category = get_object_or_404(Category, slug=category_slug)
-        return Product.objects.filter(category=self.category, is_active=True).order_by('-created_at')
+        return Product.objects.filter(category=self.category, is_active=True).order_by('-created_at')

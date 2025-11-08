@@ -2,7 +2,7 @@
 module.exports = {
   content: [
     './templates/**/*.html',
-    './**/templates/**/*.html',
+    '../apps/**/templates/**/*.html',
   ],
   darkMode: 'class', // Add this line to enable dark mode
   theme: {

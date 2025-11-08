@@ -8,7 +8,7 @@ from django.db.models import Sum, Count, Q, F
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from datetime import datetime, timedelta
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.views.decorators.http import require_POST
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -454,7 +454,7 @@ def admin_contact_message_delete(request, message_id):
 def admin_order_detail_api(request, order_id):
     """API برای دریافت اطلاعات کامل سفارش"""
     try:
-        order = get_object_or_404(Order.objects.select_related('user', 'product'), id=order_id)
+        order = get_object_or_404(Order.objects.select_related('user', 'product', 'payment'), id=order_id)
         
         # محاسبه اطلاعات آماری کاربر
         user_orders = Order.objects.filter(user=order.user)
@@ -488,51 +488,43 @@ def admin_order_detail_api(request, order_id):
                 })
         
         # اطلاعات سفارش - با ساختار مورد انتظار JavaScript
+        # اضافه کردن اطلاعات رسید پرداخت
+        payment_receipt_url = order.payment.receipt.url if hasattr(order, 'payment') and order.payment.receipt else None
+        
         order_data = {
             'id': order.id,
-            'created_at': order.created_at.strftime('%Y/%m/%d - %H:%M'),
-            'status': order.status,
-            'status_display': order.get_status_display(),
-            'status_key': order.status,
-            'total_price': f"{order.total_price:,} تومان",
-            'quantity': order.quantity,
-            'payment_method_display': 'کارت به کارت',  # یا از مدل بخون
-            'notes': order.notes if hasattr(order, 'notes') else '',
-            'user_phone': order.user.phone_number,
-            'user_name': order.user.get_full_name() or order.user.username,
-            'referral_code': order.referral_code or '',
-            'status_timeline': status_timeline,
-            'items': [{
-                'name': order.product.name,
-                'quantity': order.quantity,
-                'price': f"{order.product.price:,}"
-            }],
-            'payment_receipt': order.payment_receipt.url if order.payment_receipt else None,
-            'customer': {
-                'name': order.user.get_full_name() or order.user.username,
-                'phone': order.user.phone_number,
+            'user': {
+                'id': order.user.id,
+                'username': order.user.username,
+                'phone_number': order.user.phone_number,
                 'email': order.user.email,
-                'total_orders': user_total_orders,
-                'completed_orders': user_completed_orders,
-                'total_spent': f"{user_total_spent:,} تومان"
             },
             'product': {
+                'id': order.product.id,
                 'name': order.product.name,
-                'price': f"{order.product.price:,} تومان",
                 'image': order.product.image.url if order.product.image else None,
-                'description': order.product.description[:100] + '...' if len(order.product.description) > 100 else order.product.description
+                'price': str(order.product.price),
             },
-            'payment_receipt_info': {
-                'exists': bool(order.payment_receipt),
-                'url': order.payment_receipt.url if order.payment_receipt else None,
-                'uploaded_at': order.payment_receipt_uploaded_at.strftime('%Y/%m/%d - %H:%M') if order.payment_receipt_uploaded_at else None
+            'quantity': order.quantity,
+            'total_price': str(order.total_price),
+            'status': order.status,
+            'status_display': order.get_status_display(),
+            'created_at': order.created_at.strftime('%Y/%m/%d - %H:%M'),
+            'updated_at': order.updated_at.strftime('%Y/%m/%d - %H:%M'),
+            'payment_receipt': payment_receipt_url, # اضافه کردن payment_receipt
+            'status_timeline': status_timeline,
+            'user_stats': {
+                'total_orders': user_total_orders,
+                'completed_orders': user_completed_orders,
+                'total_spent': str(user_total_spent),
             }
         }
         
         return JsonResponse({'success': True, 'order': order_data})
-    
+    except Http404:
+        return JsonResponse({'success': False, 'error': 'سفارش یافت نشد.'}, status=404)
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @admin_required

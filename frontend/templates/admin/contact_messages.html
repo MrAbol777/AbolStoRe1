@@ -99,27 +99,26 @@
 {{ block.super }}
 <script>
 $(document).ready(function() {
-    $('.view-message-btn').on('click', function() {
+    $(document).on('click', '.view-message-btn', function() {
+        // console.log('View message button clicked');
         var name = $(this).data('name');
         var email = $(this).data('email');
         var subject = $(this).data('subject');
         var message = $(this).data('message');
-        var createdAt = $(this).data('created-at');
-
-        $('#modal-name').text(name);
-        $('#modal-email').text(email);
-        $('#modal-subject').text(subject);
-        $('#modal-message').text(message);
-        $('#modal-created-at').text(createdAt);
-
-        console.log("View button clicked!");
-        console.log("Name: ", name);
-        console.log("Email: ", email);
-        console.log("Subject: ", subject);
-        console.log("Message: ", message);
-        console.log("Created At: ", createdAt);
-
-        $('#messageDetailModal').modal('show');
+    
+        // console.log('Name:', name);
+        // console.log('Email:', email);
+        // console.log('Subject:', subject);
+        // console.log('Message:', message);
+    
+        $('#messageModalLabel').text('پیام از: ' + name);
+        $('#modalName').text(name);
+        $('#modalEmail').text(email);
+        $('#modalSubject').text(subject);
+        $('#modalMessage').text(message);
+    
+        $('#messageModal').modal('show');
+        // console.log('Modal should be showing');
     });
 });
 </script>
