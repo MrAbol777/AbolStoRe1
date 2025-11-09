@@ -22,8 +22,8 @@
 
 1. کلون کردن مخزن:
 ```bash
-git clone https://github.com/yourusername/abolstore.git
-cd abolstore
+git clone https://github.com/MrAbol777/AbolStoRe1.git
+cd AbolStoRe1
 ```
 
 2. ایجاد محیط مجازی و نصب وابستگی‌ها:
